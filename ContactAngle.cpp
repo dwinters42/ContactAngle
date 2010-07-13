@@ -56,7 +56,6 @@ int main(int, char**)
 	const char* Mi = edges.ptr<char>(row);
 	for (col=0;col<edges.cols;col++) {
 	  if (Mi[col]==0) {
-	    std::cout << col << std::endl;
 	    circle(frame, Point(col,row),1, CV_RGB(255,0,0));
 	    break;
 	    }
