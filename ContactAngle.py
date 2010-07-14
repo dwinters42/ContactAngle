@@ -10,7 +10,8 @@ class ContactAngleFinder:
 
         self.fwidth=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_WIDTH)
         self.fheight=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_HEIGHT)
-        self.numframes=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_COUNT)
+        self.numframes=cv.GetCaptureProperty(self.cap,\
+                                                 cv.CV_CAP_PROP_FRAME_COUNT)
 
         self.thresh=110
         self.framenum=0
@@ -131,10 +132,9 @@ class ContactAngleFinder:
                         (basepointright[0]-basepointleft[0]))*180/pi
         al=al-tilt
         ar=ar+tilt
-        print (tilt,al,ar)
+        print("%.2f, %.2f" % (al,ar))
 
         cv.Line(self.frame,basepointleft,basepointright,cv.CV_RGB(0,255,0))
-        
 
         # draw lines showing the contact angles
         if al>90.0:
