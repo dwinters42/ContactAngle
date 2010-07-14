@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import cv
+import cv, sys
 from pylab import *
 
 class ContactAngleFinder:
@@ -38,7 +38,9 @@ class ContactAngleFinder:
 
     def processAll(self,event,x,y,flags,param):
         if event == cv.CV_EVENT_LBUTTONDOWN:
-            df=file('data.txt','w')
+            outfile=self.infile[:self.infile.index('.')]+'_fit.txt'
+            print('output goes to %s' % outfile)
+            df=file(outfile,'w')
             df.write('# contact angle data for file %s\n' % self.infile)
  
             for ii in range(self.numframes):
@@ -189,5 +191,7 @@ class ContactAngleFinder:
 
 if __name__ == '__main__':
 
-    ContactAngleFinder('test.avi').run()
+    infile=sys.argv[1]
+    print('loading %s' % infile)
+    ContactAngleFinder(infile).run()
 
