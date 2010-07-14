@@ -53,15 +53,9 @@ class ContactAngleFinder:
         self.frame=cv.QueryFrame(self.cap)
         self.edges=cv.CreateMat(self.fheight,self.fwidth,cv.CV_8UC1)
         cv.CvtColor(self.frame, self.edges, cv.CV_BGR2GRAY)
-        # cv.GaussianBlur(self.edges, self.edges, Size(7,7), 1.5, 1.5)
-        # cv.Canny(self.edges, self.edges, low, high, 3)
         cv.EqualizeHist(self.edges, self.edges)
         cv.Threshold(self.edges,self.edges,self.thresh,255,cv.CV_THRESH_BINARY)
-  
         cv.CvtColor(self.edges, self.frame, cv.CV_GRAY2BGR);
-        
-        cv.Line(self.frame,(0,self.baseleft),(self.fwidth,self.baseleft),cv.CV_RGB(0,255,0))
-        cv.Line(self.frame,(0,self.upperlim),(self.fwidth,self.upperlim),cv.CV_RGB(0,0,255))
 
         clf()
   
@@ -132,8 +126,17 @@ class ContactAngleFinder:
         # used for tilt correction further down
         basepointright=(y0[-1],self.baseright)
 
-        # draw lines showing the contact angle
+        # tilt correction
+        tilt=arctan((basepointleft[1]-basepointright[1])/\
+                        (basepointright[0]-basepointleft[0]))*180/pi
+        al=al-tilt
+        ar=ar+tilt
+        print (tilt,al,ar)
 
+        cv.Line(self.frame,basepointleft,basepointright,cv.CV_RGB(0,255,0))
+        
+
+        # draw lines showing the contact angles
         if al>90.0:
             cv.Line(self.frame, basepointleft, \
                         (basepointleft[0]-100, \
@@ -156,7 +159,6 @@ class ContactAngleFinder:
                              basepointright[1]-100*tan((ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
-        
         cv.ShowImage("ContactAngle", self.frame)
 
         return (self.framenum,al,ar)
