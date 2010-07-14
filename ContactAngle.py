@@ -57,6 +57,7 @@ class ContactAngleFinder:
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
 
+        # fit the contact angle
         y=y0-y0[0]
         x=(x0-max(x0))*-1
 
@@ -66,7 +67,6 @@ class ContactAngleFinder:
         xx=arange(min(x),max(x)+3)
         plot(xx,polyval(p,xx),'r-')
         axis('equal')
-        #axhline(0)
         grid(True)
         draw()
 
@@ -75,6 +75,20 @@ class ContactAngleFinder:
         else:
             a=(arctan(1.0/abs(p[1]))*180/pi)
         print a,p
+
+        # draw a line showing the contact angle
+        if a>90.0:
+            cv.Line(self.frame,\
+                        (y0[-1],self.lowerlim),\
+                        (y0[-1]-100,self.lowerlim-100*tan((180.0-a)/180*pi)),\
+                        cv.CV_RGB(0,255,0))
+        else:
+            cv.Line(self.frame,\
+                        (y0[-1],self.lowerlim),\
+                        (y0[-1]+100,self.lowerlim-100*tan((a)/180*pi)),\
+                        cv.CV_RGB(0,255,0))
+
+        
         cv.ShowImage("ContactAngle", self.frame)
 
     def run(self):
