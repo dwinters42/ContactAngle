@@ -1,6 +1,7 @@
 #!/bin/env python
 
 import cv
+from pylab import *
 
 class ContactAngleFinder:
     def __init__(self,infile):
@@ -25,9 +26,10 @@ class ContactAngleFinder:
         cv.CreateTrackbar("Frame", "ContactAngle",\
                               self.framenum, self.numframes, self.set_framenum);
 
+        figure(1)
+        show()
 
     def process(self):
-        print(self.framenum,self.thresh,self.lowerlim,self.upperlim)
         cv.SetCaptureProperty(self.cap,cv.CV_CAP_PROP_POS_FRAMES,self.framenum)
         self.frame=cv.QueryFrame(self.cap)
         self.edges=cv.CreateMat(self.fheight,self.fwidth,cv.CV_8UC1)
@@ -42,20 +44,37 @@ class ContactAngleFinder:
         cv.Line(self.frame,(0,self.lowerlim),(self.fwidth,self.lowerlim),cv.CV_RGB(0,255,0))
         cv.Line(self.frame,(0,self.upperlim),(self.fwidth,self.upperlim),cv.CV_RGB(0,0,255))
   
-        # // go row-wise from left to right and note the position of the
-        # // first black pixel
-        # int row, col;
-        # for (row=self.upperlim;row<self.lowerlim;row++) {
-        #   const char* Mi = self.edges.ptr<char>(row);
-        #   for (col=0;col<self.edges.cols;col++) {
-        #     if (Mi[col]==0) {
-        #       std::cout << row << " " << col << std::endl;
-        #       circle(self.frame, Point(col,row),1, CV_RGB(255,0,0));
-        #       break;
-        #     }
-        #   }
-        # }
-    
+        # go row-wise from left to right and note the position of the
+        # first black pixel
+
+        x0=arange(-(self.lowerlim-self.upperlim),0)
+        y0=zeros(len(x0))
+
+        for row in range(self.upperlim,self.lowerlim):
+            for col in range(0,self.edges.cols):
+                if self.edges[row,col]  == 0:
+                    y0[row-self.upperlim]=col
+                    cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
+                    break
+
+        y=y0-y0[0]
+        x=(x0-max(x0))*-1
+
+        clf()
+        plot(x,y,'o')
+        p=polyfit(x,y,2)
+        xx=arange(min(x),max(x)+3)
+        plot(xx,polyval(p,xx),'r-')
+        axis('equal')
+        #axhline(0)
+        grid(True)
+        draw()
+
+        if (p[1]<0):
+            a=180-(arctan(1.0/abs(p[1]))*180/pi)
+        else:
+            a=(arctan(1.0/abs(p[1]))*180/pi)
+        print a,p
         cv.ShowImage("ContactAngle", self.frame)
 
     def run(self):
