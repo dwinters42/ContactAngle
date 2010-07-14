@@ -5,7 +5,8 @@ from pylab import *
 
 class ContactAngleFinder:
     def __init__(self,infile):
-        self.cap=cv.CaptureFromFile(infile)
+        self.infile=infile
+        self.cap=cv.CaptureFromFile(self.infile)
 
         self.fwidth=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_WIDTH)
         self.fheight=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_HEIGHT)
@@ -29,8 +30,23 @@ class ContactAngleFinder:
         cv.CreateTrackbar("UpperLimit", "ContactAngle",\
                               self.upperlim, self.fheight, self.set_upperlim)
 
+        cv.SetMouseCallback("ContactAngle",self.processAll)
+
         figure(1)
         show()
+
+    def processAll(self,event,x,y,flags,param):
+        if event == cv.CV_EVENT_LBUTTONDOWN:
+            df=file('data.txt','w')
+            df.write('# contact angle data for file %s\n' % self.infile)
+ 
+            for ii in range(self.numframes):
+                print('processing frame %i' % ii)
+                self.framenum=ii
+                frame,al,ar=self.process()
+                df.write('%i, %f, %f\n' % (frame,al,ar))
+
+            df.close()
 
     def process(self):
         cv.SetCaptureProperty(self.cap,cv.CV_CAP_PROP_POS_FRAMES,self.framenum)
@@ -74,22 +90,21 @@ class ContactAngleFinder:
         plot(xx,polyval(p,xx),'g-')
 
         if (p[1]<0):
-            a=180-(arctan(1.0/abs(p[1]))*180/pi)
+            al=180-(arctan(1.0/abs(p[1]))*180/pi)
         else:
-            a=(arctan(1.0/abs(p[1]))*180/pi)
+            al=(arctan(1.0/abs(p[1]))*180/pi)
 
-        print a
 
         # draw a line showing the contact angle
-        if a>90.0:
+        if al>90.0:
             cv.Line(self.frame,\
                         (y0[-1],self.baseleft),\
-                        (y0[-1]-100,self.baseleft-100*tan((180.0-a)/180*pi)),\
+                        (y0[-1]-100,self.baseleft-100*tan((180.0-al)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame,\
                         (y0[-1],self.baseleft),\
-                        (y0[-1]+100,self.baseleft-100*tan((a)/180*pi)),\
+                        (y0[-1]+100,self.baseleft-100*tan((al)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
 
@@ -121,26 +136,26 @@ class ContactAngleFinder:
         draw()
 
         if (p[1]>0):
-            a=180-(arctan(1.0/abs(p[1]))*180/pi)
+            ar=180-(arctan(1.0/abs(p[1]))*180/pi)
         else:
-            a=(arctan(1.0/abs(p[1]))*180/pi)
-
-        print a
+            ar=(arctan(1.0/abs(p[1]))*180/pi)
 
         # draw a line showing the contact angle
-        if a>90.0:
+        if ar>90.0:
             cv.Line(self.frame,\
                         (y0[-1],self.baseright),\
-                        (y0[-1]+100,self.baseright-100*tan((180.0-a)/180*pi)),\
+                        (y0[-1]+100,self.baseright-100*tan((180.0-ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame,\
                         (y0[-1],self.baseright),\
-                        (y0[-1]+100,self.baseright-100*tan((a)/180*pi)),\
+                        (y0[-1]+100,self.baseright-100*tan((ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
         
         cv.ShowImage("ContactAngle", self.frame)
+
+        return (self.framenum,al,ar)
 
     def run(self):
         self.process()
