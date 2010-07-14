@@ -43,7 +43,11 @@ class ContactAngleFinder:
         
         cv.Line(self.frame,(0,self.lowerlim),(self.fwidth,self.lowerlim),cv.CV_RGB(0,255,0))
         cv.Line(self.frame,(0,self.upperlim),(self.fwidth,self.upperlim),cv.CV_RGB(0,0,255))
+
+        clf()
   
+        ### left angle ####
+
         # go row-wise from left to right and note the position of the
         # first black pixel
 
@@ -61,26 +65,70 @@ class ContactAngleFinder:
         y=y0-y0[0]
         x=(x0-max(x0))*-1
 
-        clf()
-        plot(x,y,'o')
+        plot(x,y,'bo')
         p=polyfit(x,y,2)
         xx=arange(min(x),max(x)+3)
-        plot(xx,polyval(p,xx),'r-')
-        axis('equal')
-        grid(True)
-        draw()
+        plot(xx,polyval(p,xx),'g-')
 
         if (p[1]<0):
             a=180-(arctan(1.0/abs(p[1]))*180/pi)
         else:
             a=(arctan(1.0/abs(p[1]))*180/pi)
-        print a,p
+
+        print a
 
         # draw a line showing the contact angle
         if a>90.0:
             cv.Line(self.frame,\
                         (y0[-1],self.lowerlim),\
                         (y0[-1]-100,self.lowerlim-100*tan((180.0-a)/180*pi)),\
+                        cv.CV_RGB(0,255,0))
+        else:
+            cv.Line(self.frame,\
+                        (y0[-1],self.lowerlim),\
+                        (y0[-1]+100,self.lowerlim-100*tan((a)/180*pi)),\
+                        cv.CV_RGB(0,255,0))
+
+
+        ### right angle ###
+
+        # go row-wise from right to left and note the position of the
+        # first black pixel
+
+        x0=arange(-(self.lowerlim-self.upperlim),0)
+        y0=zeros(len(x0))
+
+        for row in range(self.upperlim,self.lowerlim):
+            for col in range(self.edges.cols-1,0,-1):
+                if self.edges[row,col] == 0:
+                    y0[row-self.upperlim]=col
+                    cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
+                    break
+
+        # fit the contact angle
+        y=y0-y0[0]
+        x=(x0-max(x0))*-1
+
+        plot(x,y,'ro')
+        p=polyfit(x,y,2)
+        xx=arange(min(x),max(x)+3)
+        plot(xx,polyval(p,xx),'g-')
+        axis('equal')
+        grid(True)
+        draw()
+
+        if (p[1]>0):
+            a=180-(arctan(1.0/abs(p[1]))*180/pi)
+        else:
+            a=(arctan(1.0/abs(p[1]))*180/pi)
+
+        print a
+
+        # draw a line showing the contact angle
+        if a>90.0:
+            cv.Line(self.frame,\
+                        (y0[-1],self.lowerlim),\
+                        (y0[-1]+100,self.lowerlim-100*tan((180.0-a)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame,\
