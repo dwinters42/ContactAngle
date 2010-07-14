@@ -13,18 +13,21 @@ class ContactAngleFinder:
 
         self.thresh=110
         self.framenum=0
-        self.lowerlim=264
+        self.baseleft=264
+        self.baseright=264
         self.upperlim=220
 
         cv.NamedWindow("ContactAngle",1);
-        cv.CreateTrackbar("LowerLimit", "ContactAngle", \
-                              self.lowerlim, self.fheight, self.set_lowerlim)
-        cv.CreateTrackbar("UpperLimit", "ContactAngle",\
-                              self.upperlim, self.fheight, self.set_upperlim)
-        cv.CreateTrackbar("Threshold", "ContactAngle",\
-                              self.thresh, 255, self.set_thresh)
         cv.CreateTrackbar("Frame", "ContactAngle",\
                               self.framenum, self.numframes, self.set_framenum);
+        cv.CreateTrackbar("Threshold", "ContactAngle",\
+                              self.thresh, 255, self.set_thresh)
+        cv.CreateTrackbar("BaseLeft", "ContactAngle", \
+                              self.baseleft, self.fheight, self.set_baseleft)
+        cv.CreateTrackbar("BaseRight", "ContactAngle", \
+                              self.baseright, self.fheight, self.set_baseright)
+        cv.CreateTrackbar("UpperLimit", "ContactAngle",\
+                              self.upperlim, self.fheight, self.set_upperlim)
 
         figure(1)
         show()
@@ -41,7 +44,7 @@ class ContactAngleFinder:
   
         cv.CvtColor(self.edges, self.frame, cv.CV_GRAY2BGR);
         
-        cv.Line(self.frame,(0,self.lowerlim),(self.fwidth,self.lowerlim),cv.CV_RGB(0,255,0))
+        cv.Line(self.frame,(0,self.baseleft),(self.fwidth,self.baseleft),cv.CV_RGB(0,255,0))
         cv.Line(self.frame,(0,self.upperlim),(self.fwidth,self.upperlim),cv.CV_RGB(0,0,255))
 
         clf()
@@ -51,10 +54,10 @@ class ContactAngleFinder:
         # go row-wise from left to right and note the position of the
         # first black pixel
 
-        x0=arange(-(self.lowerlim-self.upperlim),0)
+        x0=arange(-(self.baseleft-self.upperlim),0)
         y0=zeros(len(x0))
 
-        for row in range(self.upperlim,self.lowerlim):
+        for row in range(self.upperlim,self.baseleft):
             for col in range(0,self.edges.cols):
                 if self.edges[row,col]  == 0:
                     y0[row-self.upperlim]=col
@@ -80,13 +83,13 @@ class ContactAngleFinder:
         # draw a line showing the contact angle
         if a>90.0:
             cv.Line(self.frame,\
-                        (y0[-1],self.lowerlim),\
-                        (y0[-1]-100,self.lowerlim-100*tan((180.0-a)/180*pi)),\
+                        (y0[-1],self.baseleft),\
+                        (y0[-1]-100,self.baseleft-100*tan((180.0-a)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame,\
-                        (y0[-1],self.lowerlim),\
-                        (y0[-1]+100,self.lowerlim-100*tan((a)/180*pi)),\
+                        (y0[-1],self.baseleft),\
+                        (y0[-1]+100,self.baseleft-100*tan((a)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
 
@@ -95,10 +98,10 @@ class ContactAngleFinder:
         # go row-wise from right to left and note the position of the
         # first black pixel
 
-        x0=arange(-(self.lowerlim-self.upperlim),0)
+        x0=arange(-(self.baseright-self.upperlim),0)
         y0=zeros(len(x0))
 
-        for row in range(self.upperlim,self.lowerlim):
+        for row in range(self.upperlim,self.baseright):
             for col in range(self.edges.cols-1,0,-1):
                 if self.edges[row,col] == 0:
                     y0[row-self.upperlim]=col
@@ -127,13 +130,13 @@ class ContactAngleFinder:
         # draw a line showing the contact angle
         if a>90.0:
             cv.Line(self.frame,\
-                        (y0[-1],self.lowerlim),\
-                        (y0[-1]+100,self.lowerlim-100*tan((180.0-a)/180*pi)),\
+                        (y0[-1],self.baseright),\
+                        (y0[-1]+100,self.baseright-100*tan((180.0-a)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame,\
-                        (y0[-1],self.lowerlim),\
-                        (y0[-1]+100,self.lowerlim-100*tan((a)/180*pi)),\
+                        (y0[-1],self.baseright),\
+                        (y0[-1]+100,self.baseright-100*tan((a)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
         
@@ -151,8 +154,12 @@ class ContactAngleFinder:
         self.thresh=pos
         self.process()
 
-    def set_lowerlim(self,pos):
-        self.lowerlim=pos
+    def set_baseleft(self,pos):
+        self.baseleft=pos
+        self.process()
+
+    def set_baseright(self,pos):
+        self.baseright=pos
         self.process()
 
     def set_upperlim(self,pos):
