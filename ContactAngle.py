@@ -81,10 +81,13 @@ class ContactAngleFinder:
         y=y0-y0[0]
         x=(x0-max(x0))*-1
 
-        plot(x,y,'bo')
+        subplot(121)
+        plot(y,x,'bo')
         p=polyfit(x,y,2)
         xx=arange(min(x),max(x)+3)
-        plot(xx,polyval(p,xx),'g-')
+        plot(polyval(p,xx),xx,'g-')
+        axis('equal')
+        grid(True)
 
         if (p[1]<0):
             al=180-(arctan(1.0/abs(p[1]))*180/pi)
@@ -113,10 +116,11 @@ class ContactAngleFinder:
         y=y0-y0[0]
         x=(x0-max(x0))*-1
 
-        plot(x,y,'ro')
+        subplot(122)
+        plot(y,x,'ro')
         p=polyfit(x,y,2)
         xx=arange(min(x),max(x)+3)
-        plot(xx,polyval(p,xx),'g-')
+        plot(polyval(p,xx),xx,'g-')
         axis('equal')
         grid(True)
         draw()
@@ -162,6 +166,7 @@ class ContactAngleFinder:
                         cv.CV_RGB(0,255,0))
 
         cv.ShowImage("ContactAngle", self.frame)
+        cv.WaitKey(30)
 
         return (self.framenum,al,ar)
 
