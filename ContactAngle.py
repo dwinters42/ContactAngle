@@ -17,7 +17,7 @@ class ContactAngleFinder:
         self.framenum=0
         self.baseleft=264
         self.baseright=264
-        self.upperlim=220
+        self.fitrange=220
 
         cv.NamedWindow("ContactAngle",1);
         cv.CreateTrackbar("Frame", "ContactAngle",\
@@ -28,8 +28,8 @@ class ContactAngleFinder:
                               self.baseleft, self.fheight, self.set_baseleft)
         cv.CreateTrackbar("BaseRight", "ContactAngle", \
                               self.baseright, self.fheight, self.set_baseright)
-        cv.CreateTrackbar("UpperLimit", "ContactAngle",\
-                              self.upperlim, self.fheight, self.set_upperlim)
+        cv.CreateTrackbar("Fitrange", "ContactAngle",\
+                              self.fitrange, self.fheight, self.set_fitrange)
 
         cv.SetMouseCallback("ContactAngle",self.processAll)
 
@@ -38,10 +38,16 @@ class ContactAngleFinder:
 
     def processAll(self,event,x,y,flags,param):
         if event == cv.CV_EVENT_LBUTTONDOWN:
-            outfile=self.infile[:self.infile.index('.')]+'_fit.txt'
+            oldframenum=self.framenum
+
+            outfile=self.infile[:self.infile.index('.')]+'.txt'
             print('output goes to %s' % outfile)
             df=file(outfile,'w')
             df.write('# contact angle data for file %s\n' % self.infile)
+            df.write('# thresh = %i\n' % self.thresh)
+            df.write('# basepointleft = (%i,%i)\n' % (self.basepointleft[0],self.basepointleft[1]))
+            df.write('# basepointright = (%i,%i)\n' % (self.basepointright[0],self.basepointright[1]))
+            df.write('# fitrange = %i\n' % self.fitrange)
  
             for ii in range(self.numframes):
                 print('processing frame %i' % ii)
@@ -50,6 +56,9 @@ class ContactAngleFinder:
                 df.write('%i, %f, %f\n' % (frame,al,ar))
 
             df.close()
+
+            self.framenum=oldframenum
+            self.process()
 
     def process(self):
         cv.SetCaptureProperty(self.cap,cv.CV_CAP_PROP_POS_FRAMES,self.framenum)
@@ -67,13 +76,13 @@ class ContactAngleFinder:
         # go row-wise from left to right and note the position of the
         # first black pixel
 
-        x0=arange(-(self.baseleft-self.upperlim),0)
+        x0=arange(-(self.baseleft-self.fitrange),0)
         y0=zeros(len(x0))
 
-        for row in range(self.upperlim,self.baseleft):
+        for row in range(self.fitrange,self.baseleft):
             for col in range(0,self.edges.cols):
                 if self.edges[row,col]  == 0:
-                    y0[row-self.upperlim]=col
+                    y0[row-self.fitrange]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
 
@@ -95,20 +104,20 @@ class ContactAngleFinder:
             al=(arctan(1.0/abs(p[1]))*180/pi)
 
         # used for tilt correction further down
-        basepointleft=(y0[-1],self.baseleft)
+        self.basepointleft=(y0[-1],self.baseleft)
 
         ### right angle ###
 
         # go row-wise from right to left and note the position of the
         # first black pixel
 
-        x0=arange(-(self.baseright-self.upperlim),0)
+        x0=arange(-(self.baseright-self.fitrange),0)
         y0=zeros(len(x0))
 
-        for row in range(self.upperlim,self.baseright):
+        for row in range(self.fitrange,self.baseright):
             for col in range(self.edges.cols-1,0,-1):
                 if self.edges[row,col] == 0:
-                    y0[row-self.upperlim]=col
+                    y0[row-self.fitrange]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
 
@@ -131,38 +140,38 @@ class ContactAngleFinder:
             ar=(arctan(1.0/abs(p[1]))*180/pi)
 
         # used for tilt correction further down
-        basepointright=(y0[-1],self.baseright)
+        self.basepointright=(y0[-1],self.baseright)
 
         # tilt correction
-        tilt=arctan((basepointleft[1]-basepointright[1])/\
-                        (basepointright[0]-basepointleft[0]))*180/pi
+        tilt=arctan((self.basepointleft[1]-self.basepointright[1])/\
+                        (self.basepointright[0]-self.basepointleft[0]))*180/pi
         al=al-tilt
         ar=ar+tilt
         print("%.2f, %.2f" % (al,ar))
 
-        cv.Line(self.frame,basepointleft,basepointright,cv.CV_RGB(0,255,0))
+        cv.Line(self.frame,self.basepointleft,self.basepointright,cv.CV_RGB(0,255,0))
 
         # draw lines showing the contact angles
         if al>90.0:
-            cv.Line(self.frame, basepointleft, \
-                        (basepointleft[0]-100, \
-                             basepointleft[1]-100*tan((180.0-al)/180*pi)),\
+            cv.Line(self.frame, self.basepointleft, \
+                        (self.basepointleft[0]-100, \
+                             self.basepointleft[1]-100*tan((180.0-al)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
-            cv.Line(self.frame, basepointleft, \
-                        (basepointleft[0]+100, \
-                             basepointleft[1]-100*tan((al)/180*pi)),\
+            cv.Line(self.frame, self.basepointleft, \
+                        (self.basepointleft[0]+100, \
+                             self.basepointleft[1]-100*tan((al)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
         if ar>90.0:
-            cv.Line(self.frame, basepointright, \
-                        (basepointright[0]+100, \
-                             basepointright[1]-100*tan((180.0-ar)/180*pi)),\
+            cv.Line(self.frame, self.basepointright, \
+                        (self.basepointright[0]+100, \
+                             self.basepointright[1]-100*tan((180.0-ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
         else:
-            cv.Line(self.frame, basepointright, \
-                        (basepointright[0]-100, \
-                             basepointright[1]-100*tan((ar)/180*pi)),\
+            cv.Line(self.frame, self.basepointright, \
+                        (self.basepointright[0]-100, \
+                             self.basepointright[1]-100*tan((ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
         cv.ShowImage("ContactAngle", self.frame)
@@ -190,8 +199,8 @@ class ContactAngleFinder:
         self.baseright=pos
         self.process()
 
-    def set_upperlim(self,pos):
-        self.upperlim=pos
+    def set_fitrange(self,pos):
+        self.fitrange=pos
         self.process()
 
 if __name__ == '__main__':
