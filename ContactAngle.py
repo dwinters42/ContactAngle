@@ -8,16 +8,16 @@ class ContactAngleFinder:
         self.infile=infile
         self.cap=cv.CaptureFromFile(self.infile)
 
-        self.fwidth=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_WIDTH)
-        self.fheight=cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_HEIGHT)
-        self.numframes=cv.GetCaptureProperty(self.cap,\
-                                                 cv.CV_CAP_PROP_FRAME_COUNT)
+        self.fwidth=int(cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_WIDTH))
+        self.fheight=int(cv.GetCaptureProperty(self.cap,cv.CV_CAP_PROP_FRAME_HEIGHT))
+        self.numframes=int(cv.GetCaptureProperty(self.cap,\
+                                                 cv.CV_CAP_PROP_FRAME_COUNT))
 
         self.thresh=110
         self.framenum=0
-        self.baseleft=self.fwidth*0.8
-        self.baseright=self.fwidth*0.8
-        self.fitrange=self.fheight*0.1
+        self.baseleft=261
+        self.baseright=261
+        self.fitrange=122
 
         cv.NamedWindow("ContactAngle",1);
         cv.CreateTrackbar("Frame", "ContactAngle",\
@@ -48,11 +48,14 @@ class ContactAngleFinder:
             df.write('# basepointleft = (%i,%i)\n' % (self.basepointleft[0],self.basepointleft[1]))
             df.write('# basepointright = (%i,%i)\n' % (self.basepointright[0],self.basepointright[1]))
             df.write('# fitrange = %i\n' % self.fitrange)
- 
+
+            tilt,basepoint=self.getTilt()
+            print('tilt=%f' % tilt)
+  
             for ii in range(self.numframes):
                 print('processing frame %i' % ii)
                 self.framenum=ii
-                frame,al,ar=self.process()
+                frame,al,ar=self.process(tilt,basepoint)
                 df.write('%i, %f, %f\n' % (frame,al,ar))
 
             df.close()
@@ -60,14 +63,30 @@ class ContactAngleFinder:
             self.framenum=oldframenum
             self.process()
 
-    def process(self):
+    def process(self,tilt=0.0,basepoint=(0,0)):
+
         cv.SetCaptureProperty(self.cap,cv.CV_CAP_PROP_POS_FRAMES,self.framenum)
         self.frame=cv.QueryFrame(self.cap)
         self.edges=cv.CreateMat(self.fheight,self.fwidth,cv.CV_8UC1)
-        cv.CvtColor(self.frame, self.edges, cv.CV_BGR2GRAY)
-        cv.EqualizeHist(self.edges, self.edges)
+        cv.CvtColor(self.frame,self.edges, cv.CV_BGR2GRAY)
+        cv.EqualizeHist(self.edges,self.edges)
         cv.Threshold(self.edges,self.edges,self.thresh,255,cv.CV_THRESH_BINARY)
-        cv.CvtColor(self.edges, self.frame, cv.CV_GRAY2BGR);
+        cv.CvtColor(self.edges,self.frame,cv.CV_GRAY2BGR);
+
+        if tilt != 0.0:
+            temp=cv.CreateMat(self.fheight,self.fwidth,cv.CV_8UC1)
+            rot_mat = cv.CreateMat(2,3,cv.CV_32FC1)
+            cv.GetRotationMatrix2D(basepoint, -1*tilt, 1.0, rot_mat)
+            cv.WarpAffine(self.edges, temp, rot_mat)
+            cv.Copy(temp,self.edges)
+            temp=cv.CreateMat(self.fheight,self.fwidth,cv.CV_8UC3)
+            cv.WarpAffine(self.frame, temp, rot_mat)
+            cv.Copy(temp,self.frame)
+            baseleft=self.baseleft
+            baseright=baseleft
+        else:
+            baseleft=self.baseleft
+            baseright=self.baseright
 
         clf()
   
@@ -76,12 +95,12 @@ class ContactAngleFinder:
         # go row-wise from left to right and note the position of the
         # first black pixel
 
-        x0=arange(-(self.baseleft-self.fitrange),0)
+        x0=arange(-(baseleft-self.fitrange),0)
         y0=zeros(len(x0))
 
-        for row in range(self.fitrange,self.baseleft):
-            for col in range(0,self.edges.cols):
-                if self.edges[row,col]  == 0:
+        for row in range(self.fitrange,baseleft):
+            for col in range(50,self.edges.cols-50):
+                if self.edges[row,col] == 0:
                     y0[row-self.fitrange]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
@@ -104,18 +123,18 @@ class ContactAngleFinder:
             al=(arctan(1.0/abs(p[1]))*180/pi)
 
         # used for tilt correction further down
-        self.basepointleft=(y0[-1],self.baseleft)
+        self.basepointleft=(y0[-1],baseleft)
 
         ### right angle ###
 
         # go row-wise from right to left and note the position of the
         # first black pixel
 
-        x0=arange(-(self.baseright-self.fitrange),0)
+        x0=arange(-(baseright-self.fitrange),0)
         y0=zeros(len(x0))
 
-        for row in range(self.fitrange,self.baseright):
-            for col in range(self.edges.cols-1,0,-1):
+        for row in range(self.fitrange,baseright):
+            for col in range(self.edges.cols-51,50,-1):
                 if self.edges[row,col] == 0:
                     y0[row-self.fitrange]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
@@ -140,14 +159,7 @@ class ContactAngleFinder:
             ar=(arctan(1.0/abs(p[1]))*180/pi)
 
         # used for tilt correction further down
-        self.basepointright=(y0[-1],self.baseright)
-
-        # tilt correction
-        tilt=arctan((self.basepointleft[1]-self.basepointright[1])/\
-                        (self.basepointright[0]-self.basepointleft[0]))*180/pi
-        al=al-tilt
-        ar=ar+tilt
-        print("%.2f, %.2f" % (al,ar))
+        self.basepointright=(y0[-1],baseright)
 
         cv.Line(self.frame,self.basepointleft,self.basepointright,cv.CV_RGB(0,255,0))
 
@@ -174,10 +186,25 @@ class ContactAngleFinder:
                              self.basepointright[1]-100*tan((ar)/180*pi)),\
                         cv.CV_RGB(0,255,0))
 
+
         cv.ShowImage("ContactAngle", self.frame)
         cv.WaitKey(30)
-
+        
         return (self.framenum,al,ar)
+
+    def getTilt(self):
+        for col in range(50,self.edges.cols-50):
+            if self.edges[self.baseleft,col] == 0:
+                x1=col
+                break
+
+        for col in range(self.edges.cols-51,50,-1):
+            if self.edges[self.baseright,col] == 0:
+                x2=col
+                break
+
+        tilt=arctan(float(self.baseleft-self.baseright)/float(x2-x1))*180/pi
+        return (tilt,(x1,self.baseleft))
 
     def run(self):
         self.process()
