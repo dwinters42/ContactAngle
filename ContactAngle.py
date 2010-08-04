@@ -15,9 +15,9 @@ class ContactAngleFinder:
 
         self.thresh=110
         self.framenum=0
-        self.baseleft=264
-        self.baseright=264
-        self.fitrange=220
+        self.baseleft=self.fwidth*0.8
+        self.baseright=self.fwidth*0.8
+        self.fitrange=self.fheight*0.1
 
         cv.NamedWindow("ContactAngle",1);
         cv.CreateTrackbar("Frame", "ContactAngle",\
