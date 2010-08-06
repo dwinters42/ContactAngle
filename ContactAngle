@@ -61,8 +61,7 @@ class ContactAngleFinder:
 
             print('fitting done...')
             df.close()
-            self.framenum=oldframenum
-            self.process()
+            sys.exit(0)
 
     def process(self,tilt=0.0,basepoint=(0,0)):
 
