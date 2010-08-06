@@ -58,8 +58,8 @@ class ContactAngleFinder:
                 frame,al,ar=self.process(tilt,basepoint)
                 df.write('%i, %f, %f\n' % (frame,al,ar))
 
+            print('fitting done...')
             df.close()
-
             self.framenum=oldframenum
             self.process()
 
@@ -122,8 +122,7 @@ class ContactAngleFinder:
         else:
             al=(arctan(1.0/abs(p[1]))*180/pi)
 
-        # used for tilt correction further down
-        self.basepointleft=(y0[-1],baseleft)
+        self.basepointleft=(int(round(y0[-1])),int(round(baseleft)))
 
         ### right angle ###
 
@@ -159,7 +158,7 @@ class ContactAngleFinder:
             ar=(arctan(1.0/abs(p[1]))*180/pi)
 
         # used for tilt correction further down
-        self.basepointright=(y0[-1],baseright)
+        self.basepointright=(int(round(y0[-1])),int(round(baseright)))
 
         cv.Line(self.frame,self.basepointleft,self.basepointright,cv.CV_RGB(0,255,0))
 
@@ -167,23 +166,23 @@ class ContactAngleFinder:
         if al>90.0:
             cv.Line(self.frame, self.basepointleft, \
                         (self.basepointleft[0]-100, \
-                             round(self.basepointleft[1]-100*tan((180.0-al)/180*pi))),\
+                             int(round(self.basepointleft[1]-100*tan((180.0-al)/180*pi)))),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame, self.basepointleft, \
                         (self.basepointleft[0]+100, \
-                             round(self.basepointleft[1]-100*tan((al)/180*pi))),\
+                             int(round(self.basepointleft[1]-100*tan((al)/180*pi)))),\
                         cv.CV_RGB(0,255,0))
 
         if ar>90.0:
             cv.Line(self.frame, self.basepointright, \
                         (self.basepointright[0]+100, \
-                             round(self.basepointright[1]-100*tan((180.0-ar)/180*pi))),\
+                             int(round(self.basepointright[1]-100*tan((180.0-ar)/180*pi)))),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame, self.basepointright, \
                         (self.basepointright[0]-100, \
-                             round(self.basepointright[1]-100*tan((ar)/180*pi))),\
+                             int(round(self.basepointright[1]-100*tan((ar)/180*pi)))),\
                         cv.CV_RGB(0,255,0))
 
 
