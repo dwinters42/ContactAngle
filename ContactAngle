@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import cv, sys
 from pylab import *
@@ -235,4 +235,3 @@ if __name__ == '__main__':
     infile=sys.argv[1]
     print('loading %s' % infile)
     ContactAngleFinder(infile).run()
-
