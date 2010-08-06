@@ -167,23 +167,23 @@ class ContactAngleFinder:
         if al>90.0:
             cv.Line(self.frame, self.basepointleft, \
                         (self.basepointleft[0]-100, \
-                             self.basepointleft[1]-100*tan((180.0-al)/180*pi)),\
+                             round(self.basepointleft[1]-100*tan((180.0-al)/180*pi))),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame, self.basepointleft, \
                         (self.basepointleft[0]+100, \
-                             self.basepointleft[1]-100*tan((al)/180*pi)),\
+                             round(self.basepointleft[1]-100*tan((al)/180*pi))),\
                         cv.CV_RGB(0,255,0))
 
         if ar>90.0:
             cv.Line(self.frame, self.basepointright, \
                         (self.basepointright[0]+100, \
-                             self.basepointright[1]-100*tan((180.0-ar)/180*pi)),\
+                             round(self.basepointright[1]-100*tan((180.0-ar)/180*pi))),\
                         cv.CV_RGB(0,255,0))
         else:
             cv.Line(self.frame, self.basepointright, \
                         (self.basepointright[0]-100, \
-                             self.basepointright[1]-100*tan((ar)/180*pi)),\
+                             round(self.basepointright[1]-100*tan((ar)/180*pi))),\
                         cv.CV_RGB(0,255,0))
 
 
