@@ -17,7 +17,7 @@ class ContactAngleFinder:
         self.framenum=0
         self.baseleft=261
         self.baseright=261
-        self.fitrange=122
+        self.numoffitpoints=80
 
         cv.NamedWindow("ContactAngle",1);
         cv.CreateTrackbar("Frame", "ContactAngle",\
@@ -28,8 +28,8 @@ class ContactAngleFinder:
                               self.baseleft, self.fheight, self.set_baseleft)
         cv.CreateTrackbar("BaseRight", "ContactAngle", \
                               self.baseright, self.fheight, self.set_baseright)
-        cv.CreateTrackbar("Fitrange", "ContactAngle",\
-                              self.fitrange, self.fheight, self.set_fitrange)
+        cv.CreateTrackbar("Points for fit", "ContactAngle",\
+                              self.numoffitpoints, self.fheight, self.set_numoffitpoints)
 
         cv.SetMouseCallback("ContactAngle",self.processAll)
 
@@ -47,7 +47,7 @@ class ContactAngleFinder:
             df.write('# thresh = %i\n' % self.thresh)
             df.write('# basepointleft = (%i,%i)\n' % (self.basepointleft[0],self.basepointleft[1]))
             df.write('# basepointright = (%i,%i)\n' % (self.basepointright[0],self.basepointright[1]))
-            df.write('# fitrange = %i\n' % self.fitrange)
+            df.write('# numoffitpoints = %i\n' % self.numoffitpoints)
 
             tilt,basepoint=self.getTilt()
             print('tilt=%f' % tilt)
@@ -95,13 +95,13 @@ class ContactAngleFinder:
         # go row-wise from left to right and note the position of the
         # first black pixel
 
-        x0=arange(-(baseleft-self.fitrange),0)
+        x0=arange(-self.numoffitpoints,0)
         y0=zeros(len(x0))
 
-        for row in range(self.fitrange,baseleft):
+        for row in range(baseleft-self.numoffitpoints,baseleft):
             for col in range(50,self.edges.cols-50):
                 if self.edges[row,col] == 0:
-                    y0[row-self.fitrange]=col
+                    y0[row-baseleft]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
 
@@ -129,13 +129,13 @@ class ContactAngleFinder:
         # go row-wise from right to left and note the position of the
         # first black pixel
 
-        x0=arange(-(baseright-self.fitrange),0)
+        x0=arange(-self.numoffitpoints,0)
         y0=zeros(len(x0))
 
-        for row in range(self.fitrange,baseright):
+        for row in range(baseright-self.numoffitpoints,baseright):
             for col in range(self.edges.cols-51,50,-1):
                 if self.edges[row,col] == 0:
-                    y0[row-self.fitrange]=col
+                    y0[row-baseright]=col
                     cv.Circle(self.frame, (col,row), 1, cv.CV_RGB(255,0,0));
                     break
 
@@ -234,8 +234,8 @@ class ContactAngleFinder:
         self.baseright=pos
         self.process()
 
-    def set_fitrange(self,pos):
-        self.fitrange=pos
+    def set_numoffitpoints(self,pos):
+        self.numoffitpoints=pos
         self.process()
 
 if __name__ == '__main__':
