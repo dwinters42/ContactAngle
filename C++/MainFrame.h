@@ -21,6 +21,7 @@
 #include <wx/image.h>
 #include <wx/statline.h>
 #include <wx/artprov.h>
+#include <wx/aboutdlg.h>
 
 #include "cv.h"
 #include "highgui.h"
@@ -50,6 +51,7 @@ protected:
 public:
     virtual void loadFile(wxCommandEvent &event);
     virtual void onExit(wxCommandEvent &event);
+    virtual void onAbout(wxCommandEvent &event);
 };
 
 #endif // MAINFRAME_H

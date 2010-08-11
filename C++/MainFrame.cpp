@@ -25,18 +25,22 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 
     //menubar
     menubar = new wxMenuBar();
-    wxMenu* menufile = new wxMenu();
-    menufile->Append(wxID_OPEN, wxEmptyString, wxEmptyString, wxITEM_NORMAL);
-    menufile->AppendSeparator();
-    menufile->Append(wxID_EXIT, wxEmptyString, wxEmptyString, wxITEM_NORMAL);
-    menubar->Append(menufile, wxT("&File"));
+    wxMenu* menuFile = new wxMenu();
+    menuFile->Append(wxID_OPEN, wxEmptyString, wxEmptyString, wxITEM_NORMAL);
+    menuFile->AppendSeparator();
+    menuFile->Append(wxID_EXIT, wxEmptyString, wxEmptyString, wxITEM_NORMAL);
+    menubar->Append(menuFile, wxT("&File"));
+    wxMenu* menuInfo = new wxMenu();
+    menuInfo->Append(wxID_ABOUT, wxEmptyString, wxEmptyString, wxITEM_NORMAL);
+    menubar->Append(menuInfo, wxT("&About"));
     SetMenuBar(menubar);
 
     // statusbar
     statusbar = CreateStatusBar(1, 0);
 
     // toolbar
-    toolbar = new wxToolBar(this, -1);
+    toolbar = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize,	\
+			    wxTB_HORIZONTAL|wxTB_TEXT);
     SetToolBar(toolbar);
     toolbar->AddTool(wxID_OPEN, wxEmptyString, \
 		     wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR),\
@@ -112,20 +116,28 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(wxID_OPEN, MainFrame::loadFile)
     EVT_MENU(wxID_EXIT, MainFrame::onExit)
+    EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
 END_EVENT_TABLE();
 
 
 void MainFrame::loadFile(wxCommandEvent &event)
 {
-    event.Skip();
-    wxLogDebug(wxT("Event handler (MainFrame::loadFile) not implemented yet"));
+  event.Skip();
+  wxLogDebug(wxT("Event handler (MainFrame::loadFile) not implemented yet"));
 }
 
 void MainFrame::onExit(wxCommandEvent &event)
 {
-    event.Skip();
-    wxLogDebug(wxT("Event handler (MainFrame::onExit) not implemented yet"));
+  Destroy();
 }
 
+void MainFrame::onAbout(wxCommandEvent &event)
+{
+  wxAboutDialogInfo info;
+  info.SetDescription(wxT("measures contact angles"));
+  info.SetCopyright(wxT("(C) 2010 Daniel Gruber <daniel.gruber@tydirium.org>"));
+
+  wxAboutBox(info);
+}
 
 
