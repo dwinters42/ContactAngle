@@ -30,7 +30,22 @@ class MainFrame: public wxFrame {
  public:
   MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
 
+ private:
   wxString filename;
+  cv::VideoCapture cap;
+  bool fileokay;
+  int threshold;
+  int framenum;
+  int baseleft;
+  int baseright;
+  double tilt;
+  int basepointx, basepointy;
+  int fwidth;
+  int fheight;
+  int numframes;
+
+  enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
+	ID_sliderRight};
 
  protected:
   wxPanel* panel;
@@ -54,6 +69,7 @@ class MainFrame: public wxFrame {
   virtual void loadFile(wxCommandEvent &event);
   virtual void onExit(wxCommandEvent &event);
   virtual void onAbout(wxCommandEvent &event);
+  virtual void process(wxScrollEvent &event);
 };
 
 #endif // MAINFRAME_H

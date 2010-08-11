@@ -53,7 +53,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 
   // plotwindow
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
-  plotwindow->SetMinSize(wxSize(600,400));
+  plotwindow->SetMinSize(wxSize(640,480));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
 
@@ -63,7 +63,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 				wxDefaultPosition, wxDefaultSize,\
 				wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS);
   label_2 = new wxStaticText(panel, wxID_ANY, wxT("Threshold:"));
-  sliderThres = new wxSlider(panel, wxID_ANY, 0, 0, 10,\
+  sliderThres = new wxSlider(panel, wxID_ANY, 0, 0, 255,\
 			     wxDefaultPosition, wxDefaultSize,\
 			     wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS);
   label_3 = new wxStaticText(panel, wxID_ANY, wxT("Base left:"));
@@ -103,6 +103,9 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizer_1->Fit(this);
   Layout();
 
+  // defaults
+  threshold = 110;
+  tilt=0.0;
 }
 
 
@@ -110,6 +113,7 @@ BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN, MainFrame::loadFile)
 EVT_MENU(wxID_EXIT, MainFrame::onExit)
 EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
+EVT_SCROLL(MainFrame::process)
 END_EVENT_TABLE();
 
 
@@ -118,21 +122,27 @@ void MainFrame::loadFile(wxCommandEvent &event)
   wxFileDialog *dlg = new wxFileDialog(this);
   if (dlg->ShowModal() == wxID_OK) {
     filename=dlg->GetPath();
-    SetTitle(wxT("ContactAngle: ")+filename);
-    statusbar->SetStatusText(wxT("Loaded ")+filename);
+    cap.open(std::string(filename.mb_str()));
+    if(!cap.isOpened())
+      wxMessageBox(wxT("Could not open file!"), wxT("Error"), wxICON_ERROR);
+    else {
+      SetTitle(wxT("ContactAngle: ")+filename);
+      statusbar->SetStatusText(wxT("Loaded ")+filename);
+
+      fileokay=true;
+      fwidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
+      fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+      numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
+
+      sliderFramenum->SetRange(0, numframes-1);
+      sliderThres->SetValue(threshold);
+      sliderLeft->SetRange(0,fheight-1);
+      sliderRight->SetRange(0,fheight-1);
+
+      wxScrollEvent dummy;
+      process(dummy);
+    }
   }
-
-  cv::VideoCapture cap(std::string(filename.mb_str()));
-  //  if(!cap.isOpened())
-  // return -1;
-
-  cv::Mat img;
-  cap >> img;
-  wxImage plot(img.cols, img.rows, (unsigned char*) img.data, true);
-  wxBitmap bm(plot);
-  
-  plotwindow->SetClientSize(img.cols,img.rows);
-  plotwindow->SetBitmap(bm);
 }
 
 void MainFrame::onExit(wxCommandEvent &event)
@@ -149,4 +159,38 @@ void MainFrame::onAbout(wxCommandEvent &event)
   wxAboutBox(info);
 }
 
+void MainFrame::process(wxScrollEvent &event) {
+  cv::Mat frame;
+  int bl, br;
+
+  cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue());
+  cap >> frame;
+
+  cv::Mat edges(fheight,fwidth,CV_8UC1);
+
+  cv::cvtColor(frame, edges, CV_BGR2GRAY);
+  cv::equalizeHist(edges, edges);
+  cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
+  cv::cvtColor(edges, frame, CV_GRAY2BGR);
+
+  // if(tilt != 0.0) {
+  //   cv::Mat temp(fheight, fwidth, CV_8UC1);
+  //   cv::Mat rot_mat(2,3,CV_32FC1);
+  //   rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
+  //   cv::warpAffine(edges, temp, rot_mat, edges.size());
+  //   edges=temp;
+  //   bl=baseleft;
+  //   br=baseleft;
+  // }
+  // else {
+  //   bl=baseleft;
+  //   br=baseright;
+  // }
+
+  wxImage plot(fwidth, fheight, (unsigned char*) frame.data, true);
+  wxBitmap bm(plot);
+
+  plotwindow->SetClientSize(fwidth,fheight);
+  plotwindow->SetBitmap(bm);
+}
 
