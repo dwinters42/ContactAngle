@@ -167,25 +167,25 @@ void MainFrame::process(wxScrollEvent &event) {
   cap >> frame;
 
   cv::Mat edges(fheight,fwidth,CV_8UC1);
-
   cv::cvtColor(frame, edges, CV_BGR2GRAY);
   cv::equalizeHist(edges, edges);
   cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
-  cv::cvtColor(edges, frame, CV_GRAY2BGR);
 
-  // if(tilt != 0.0) {
-  //   cv::Mat temp(fheight, fwidth, CV_8UC1);
-  //   cv::Mat rot_mat(2,3,CV_32FC1);
-  //   rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
-  //   cv::warpAffine(edges, temp, rot_mat, edges.size());
-  //   edges=temp;
-  //   bl=baseleft;
-  //   br=baseleft;
-  // }
-  // else {
-  //   bl=baseleft;
-  //   br=baseright;
-  // }
+  if (tilt != 0.0) {
+    cv::Mat temp(fheight, fwidth, CV_8UC1);
+    cv::Mat rot_mat(2,3,CV_32FC1);
+    rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
+    cv::warpAffine(edges, temp, rot_mat, edges.size());
+    edges=temp;
+    bl=baseleft;
+    br=baseleft;
+  }
+  else {
+    bl=baseleft;
+    br=baseright;
+  }
+
+  cv::cvtColor(edges, frame, CV_GRAY2BGR);
 
   wxImage plot(fwidth, fheight, (unsigned char*) frame.data, true);
   wxBitmap bm(plot);
