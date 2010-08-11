@@ -22,6 +22,7 @@
 #include <wx/statline.h>
 #include <wx/artprov.h>
 #include <wx/aboutdlg.h>
+#include <wx/busyinfo.h>
 
 #include "cv.h"
 #include "highgui.h"

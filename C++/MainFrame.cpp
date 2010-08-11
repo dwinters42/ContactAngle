@@ -122,6 +122,10 @@ void MainFrame::loadFile(wxCommandEvent &event)
   wxFileDialog *dlg = new wxFileDialog(this);
   if (dlg->ShowModal() == wxID_OK) {
     filename=dlg->GetPath();
+
+    wxWindowDisabler disabler;
+    wxBusyInfo busy(wxT("loading data, please wait ..."));
+
     cap.open(std::string(filename.mb_str()));
     if(!cap.isOpened())
       wxMessageBox(wxT("Could not open file!"), wxT("Error"), wxICON_ERROR);
