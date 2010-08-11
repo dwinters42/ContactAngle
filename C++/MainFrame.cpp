@@ -15,9 +15,9 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 
-#include "MyFrame.h"
+#include "MainFrame.h"
 
-MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
+MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
     wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
     SetTitle(wxT("ContactAngle"));
@@ -109,22 +109,22 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
 }
 
 
-BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-    EVT_MENU(wxID_OPEN, MyFrame::loadFile)
-    EVT_MENU(wxID_EXIT, MyFrame::onExit)
+BEGIN_EVENT_TABLE(MainFrame, wxFrame)
+    EVT_MENU(wxID_OPEN, MainFrame::loadFile)
+    EVT_MENU(wxID_EXIT, MainFrame::onExit)
 END_EVENT_TABLE();
 
 
-void MyFrame::loadFile(wxCommandEvent &event)
+void MainFrame::loadFile(wxCommandEvent &event)
 {
     event.Skip();
-    wxLogDebug(wxT("Event handler (MyFrame::loadFile) not implemented yet"));
+    wxLogDebug(wxT("Event handler (MainFrame::loadFile) not implemented yet"));
 }
 
-void MyFrame::onExit(wxCommandEvent &event)
+void MainFrame::onExit(wxCommandEvent &event)
 {
     event.Skip();
-    wxLogDebug(wxT("Event handler (MyFrame::onExit) not implemented yet"));
+    wxLogDebug(wxT("Event handler (MainFrame::onExit) not implemented yet"));
 }
 
 

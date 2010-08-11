@@ -16,7 +16,7 @@
 
 #include <wx/wx.h>
 #include <wx/image.h>
-#include "MyFrame.h"
+#include "MainFrame.h"
 
 class ContactAngleApp: public wxApp {
 public:
@@ -28,8 +28,8 @@ IMPLEMENT_APP(ContactAngleApp)
 bool ContactAngleApp::OnInit()
 {
     wxInitAllImageHandlers();
-    MyFrame* frame_1 = new MyFrame(NULL, wxID_ANY, wxEmptyString);
-    SetTopWindow(frame_1);
-    frame_1->Show();
+    MainFrame* frame = new MainFrame(NULL, wxID_ANY, wxEmptyString);
+    SetTopWindow(frame);
+    frame->Show();
     return true;
 }

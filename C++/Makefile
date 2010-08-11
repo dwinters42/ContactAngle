@@ -6,8 +6,8 @@ LDFLAGS = $(shell pkg-config --libs opencv) $(shell wx-config --libs)
 
 all: ContactAngle
 
-ContactAngle: main.o MyFrame.o
-	${CXX} -o ContactAngle ${LDFLAGS} main.o MyFrame.o
+ContactAngle: main.o MainFrame.o
+	${CXX} -o ContactAngle ${LDFLAGS} main.o MainFrame.o
 
 clean:
 	rm -rf ContactAngle *.o

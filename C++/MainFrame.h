@@ -14,8 +14,8 @@
 // TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#ifndef MYFRAME_H
-#define MYFRAME_H
+#ifndef MAINFRAME_H
+#define MAINFRAME_H
 
 #include <wx/wx.h>
 #include <wx/image.h>
@@ -25,9 +25,9 @@
 #include "cv.h"
 #include "highgui.h"
 
-class MyFrame: public wxFrame {
+class MainFrame: public wxFrame {
 public:
-    MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
+    MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
 
 protected:
     wxPanel* panel;
@@ -52,4 +52,4 @@ public:
     virtual void onExit(wxCommandEvent &event);
 };
 
-#endif // MYFRAME_H
+#endif // MAINFRAME_H
