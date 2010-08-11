@@ -42,7 +42,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
     toolbar = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize,	\
 			    wxTB_HORIZONTAL|wxTB_TEXT);
     SetToolBar(toolbar);
-    toolbar->AddTool(wxID_OPEN, wxEmptyString, \
+    toolbar->AddTool(wxID_OPEN, wxT("Load"),				\
 		     wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR),\
 		     wxNullBitmap, wxITEM_NORMAL, wxT("Load video or image"),\
 		     wxEmptyString);

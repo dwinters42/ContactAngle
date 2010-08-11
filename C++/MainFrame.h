@@ -27,31 +27,31 @@
 #include "highgui.h"
 
 class MainFrame: public wxFrame {
-public:
-    MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
+ public:
+  MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
 
-protected:
-    wxPanel* panel;
-    wxMenuBar* menubar;
-    wxStatusBar* statusbar;
-    wxToolBar* toolbar;
-    wxStaticBitmap* plotwindow;
-    wxStaticLine* static_line_1;
-    wxStaticText* label_1;
-    wxSlider* sliderFramenum;
-    wxStaticText* label_2;
-    wxSlider* sliderThres;
-    wxStaticText* label_3;
-    wxSlider* sliderLeft;
-    wxStaticText* label_4;
-    wxSlider* sliderRight;
+ protected:
+  wxPanel* panel;
+  wxMenuBar* menubar;
+  wxStatusBar* statusbar;
+  wxToolBar* toolbar;
+  wxStaticBitmap* plotwindow;
+  wxStaticLine* static_line_1;
+  wxStaticText* label_1;
+  wxSlider* sliderFramenum;
+  wxStaticText* label_2;
+  wxSlider* sliderThres;
+  wxStaticText* label_3;
+  wxSlider* sliderLeft;
+  wxStaticText* label_4;
+  wxSlider* sliderRight;
 
-    DECLARE_EVENT_TABLE();
+  DECLARE_EVENT_TABLE();
 
-public:
-    virtual void loadFile(wxCommandEvent &event);
-    virtual void onExit(wxCommandEvent &event);
-    virtual void onAbout(wxCommandEvent &event);
+ public:
+  virtual void loadFile(wxCommandEvent &event);
+  virtual void onExit(wxCommandEvent &event);
+  virtual void onAbout(wxCommandEvent &event);
 };
 
 #endif // MAINFRAME_H

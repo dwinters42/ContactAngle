@@ -20,16 +20,16 @@
 
 class ContactAngleApp: public wxApp {
 public:
-    bool OnInit();
+  bool OnInit();
 };
 
 IMPLEMENT_APP(ContactAngleApp)
 
 bool ContactAngleApp::OnInit()
 {
-    wxInitAllImageHandlers();
-    MainFrame* frame = new MainFrame(NULL, wxID_ANY, wxEmptyString);
-    SetTopWindow(frame);
-    frame->Show();
-    return true;
+  wxInitAllImageHandlers();
+  MainFrame* frame = new MainFrame(NULL, wxID_ANY, wxEmptyString);
+  SetTopWindow(frame);
+  frame->Show();
+  return true;
 }
