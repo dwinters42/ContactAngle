@@ -118,6 +118,8 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizer_1->Fit(this);
   Layout();
 
+  dataloaded = false;
+
   // defaults
   threshold = 110;
   tilt=0.0;
@@ -158,6 +160,8 @@ void MainFrame::loadFile(wxCommandEvent &event)
       sliderLeft->SetRange(0,fheight-1);
       sliderRight->SetRange(0,fheight-1);
 
+      dataloaded=true;
+
       wxScrollEvent dummy;
       process(dummy);
     }
@@ -179,37 +183,40 @@ void MainFrame::onAbout(wxCommandEvent &event)
 }
 
 void MainFrame::process(wxScrollEvent &event) {
-  cv::Mat frame;
-  int bl, br;
 
-  cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue());
-  cap >> frame;
+  if (dataloaded) {
+    cv::Mat frame;
+    int bl, br;
 
-  cv::Mat edges(fheight,fwidth,CV_8UC1);
-  cv::cvtColor(frame, edges, CV_BGR2GRAY);
-  cv::equalizeHist(edges, edges);
-  cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
+    cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue());
+    cap >> frame;
 
-  if (tilt != 0.0) {
-    cv::Mat temp(fheight, fwidth, CV_8UC1);
-    cv::Mat rot_mat(2,3,CV_32FC1);
-    rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
-    cv::warpAffine(edges, temp, rot_mat, edges.size());
-    edges=temp;
-    bl=baseleft;
-    br=baseleft;
+    cv::Mat edges(fheight,fwidth,CV_8UC1);
+    cv::cvtColor(frame, edges, CV_BGR2GRAY);
+    cv::equalizeHist(edges, edges);
+    cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
+    
+    if (tilt != 0.0) {
+      cv::Mat temp(fheight, fwidth, CV_8UC1);
+      cv::Mat rot_mat(2,3,CV_32FC1);
+      rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
+      cv::warpAffine(edges, temp, rot_mat, edges.size());
+      edges=temp;
+      bl=baseleft;
+      br=baseleft;
+    }
+    else {
+      bl=baseleft;
+      br=baseright;
+    }
+    
+    cv::cvtColor(edges, frame, CV_GRAY2BGR);
+    
+    wxImage plot(fwidth, fheight, (unsigned char*) frame.data, true);
+    wxBitmap bm(plot);
+    
+    plotwindow->SetClientSize(fwidth,fheight);
+    plotwindow->SetBitmap(bm);
   }
-  else {
-    bl=baseleft;
-    br=baseright;
-  }
-
-  cv::cvtColor(edges, frame, CV_GRAY2BGR);
-
-  wxImage plot(fwidth, fheight, (unsigned char*) frame.data, true);
-  wxBitmap bm(plot);
-
-  plotwindow->SetClientSize(fwidth,fheight);
-  plotwindow->SetBitmap(bm);
 }
 
