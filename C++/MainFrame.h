@@ -60,8 +60,10 @@ class MainFrame: public wxFrame {
   wxStaticText* label_2;
   wxSlider* sliderThres;
   wxStaticText* label_3;
-  wxSlider* sliderLeft;
+  wxSlider* sliderFitpoints;
   wxStaticText* label_4;
+  wxSlider* sliderLeft;
+  wxStaticText* label_5;
   wxSlider* sliderRight;
 
   DECLARE_EVENT_TABLE();
