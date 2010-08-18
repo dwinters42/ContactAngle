@@ -47,7 +47,7 @@ class MainFrame: public wxFrame {
 
   bool dataloaded;
 
-  uchar *dataleft, *dataright;
+  int *dataleft, *dataright;
 
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
 	ID_sliderRight};
@@ -58,6 +58,8 @@ class MainFrame: public wxFrame {
   wxStatusBar* statusbar;
   wxToolBar* toolbar;
   wxStaticBitmap* plotwindow;
+  wxStaticBitmap* fitwindowleft;
+  wxStaticBitmap* fitwindowright;
   wxStaticLine* static_line_1;
   wxStaticText* label_1;
   wxSlider* sliderFramenum;

@@ -51,9 +51,13 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 		   wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
   toolbar->Realize();
 
-  // plotwindow
+  // plotting windows
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   plotwindow->SetMinSize(wxSize(640,480));
+  fitwindowleft = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
+  fitwindowleft->SetMinSize(wxSize(200,480));
+  fitwindowright = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
+  fitwindowright->SetMinSize(wxSize(200,480));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
 
@@ -81,41 +85,46 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 
 
   // put all stuff in sizers
-  wxBoxSizer* sizer_1 = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer* sizer_2 = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer* sizer_6 = new wxBoxSizer(wxHORIZONTAL);
-  wxBoxSizer* sizer_5 = new wxBoxSizer(wxHORIZONTAL);
-  wxBoxSizer* sizer_4 = new wxBoxSizer(wxHORIZONTAL);
-  wxBoxSizer* sizer_3 = new wxBoxSizer(wxHORIZONTAL);
-  wxBoxSizer* sizer_7 = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* MainMainsizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer* MainSizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer* plotSizer = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* sizerLeft = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* sizerFitpoints = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* sizerThres = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* sizerFramenum = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer* sizerRight = new wxBoxSizer(wxHORIZONTAL);
 
-  sizer_2->Add(plotwindow, 1, wxALL|wxEXPAND, 5);
-  sizer_2->Add(static_line_1, 0, wxEXPAND, 5);
+  plotSizer->Add(plotwindow, 1, wxALL|wxEXPAND,5);
+  plotSizer->Add(fitwindowleft, 0, wxALL|wxEXPAND,5);
+  plotSizer->Add(fitwindowright, 0, wxALL|wxEXPAND,5);
 
-  sizer_3->Add(label_1, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizer_3->Add(sliderFramenum, 5, wxALL|wxEXPAND, 5);
-  sizer_2->Add(sizer_3, 0, wxEXPAND, 5);
+  MainSizer->Add(plotSizer, 1, wxALL|wxEXPAND, 5);
+  MainSizer->Add(static_line_1, 0, wxEXPAND, 5);
 
-  sizer_4->Add(label_2, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizer_4->Add(sliderThres, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  sizer_2->Add(sizer_4, 0, wxEXPAND, 5);
+  sizerFramenum->Add(label_1, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerFramenum->Add(sliderFramenum, 5, wxALL|wxEXPAND, 5);
+  MainSizer->Add(sizerFramenum, 0, wxEXPAND, 5);
 
-  sizer_5->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizer_5->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  sizer_2->Add(sizer_5, 0, wxEXPAND, 5);
+  sizerThres->Add(label_2, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerThres->Add(sliderThres, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerThres, 0, wxEXPAND, 5);
 
-  sizer_6->Add(label_4, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizer_6->Add(sliderLeft, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  sizer_2->Add(sizer_6, 0, wxEXPAND, 5);
+  sizerFitpoints->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerFitpoints->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerFitpoints, 0, wxEXPAND, 5);
 
-  sizer_7->Add(label_5, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizer_7->Add(sliderRight, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  sizer_2->Add(sizer_7, 0, wxEXPAND, 5);
+  sizerLeft->Add(label_4, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerLeft->Add(sliderLeft, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerLeft, 0, wxEXPAND, 5);
 
-  panel->SetSizer(sizer_2);
-  sizer_1->Add(panel, 1, wxEXPAND, 5);
-  SetSizer(sizer_1);
-  sizer_1->Fit(this);
+  sizerRight->Add(label_5, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerRight->Add(sliderRight, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerRight, 0, wxEXPAND, 5);
+
+  panel->SetSizer(MainSizer);
+  MainMainsizer->Add(panel, 1, wxEXPAND, 5);
+  SetSizer(MainMainsizer);
+  MainMainsizer->Fit(this);
   Layout();
 
   dataloaded = false;
@@ -225,8 +234,8 @@ void MainFrame::process(wxScrollEvent &event) {
     int baseleft=sliderLeft->GetValue();
     int baseright=sliderRight->GetValue();
 
-    dataleft = new uchar[numofpoints];
-    dataright = new uchar[numofpoints];
+    dataleft = new int[numofpoints];
+    dataright = new int[numofpoints];
 
     int row, col;
 
@@ -257,6 +266,56 @@ void MainFrame::process(wxScrollEvent &event) {
 	}
       }
     }
+
+    // plot the fitwindows
+
+    cv::Mat fitleft = cv::Mat::zeros(480,200,CV_8UC3);
+    fitleft=CV_RGB(255,255,255);
+    cv::Mat fitright = cv::Mat::zeros(480,200,CV_8UC3);
+    fitright=CV_RGB(255,255,255);
+
+    // left 
+    int i, min=fwidth, max=0;
+
+    for(i=0;i<numofpoints;i++) {
+      if (dataleft[i]<min)
+	min=dataleft[i];
+      if (dataleft[i]>max)
+	max=dataleft[i];
+    }
+
+    for (i=0;i<numofpoints;i++) {
+      cv::circle(fitleft, cv::Point(\
+				    (dataleft[i]-min)*(200/(max-min)),\
+				    i*(480/numofpoints)),\
+		 3, CV_RGB(255,0,0),-1);
+    }
+
+    wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
+    wxBitmap bmleft(imleft);
+    fitwindowleft->SetBitmap(bmleft);
+
+    // right 
+    min=fwidth;
+    max=0;
+
+    for(i=0;i<numofpoints;i++) {
+      if (dataright[i]<min)
+	min=dataright[i];
+      if (dataright[i]>max)
+	max=dataright[i];
+    }
+
+    for (i=0;i<numofpoints;i++) {
+      cv::circle(fitright, cv::Point(\
+				    (dataright[i]-min)*(200/(max-min)),\
+				    i*(480/numofpoints)),\
+		 3, CV_RGB(255,0,0),-1);
+    }
+
+    wxImage imright(fitright.cols, fitright.rows, (uchar*) fitright.data, true);
+    wxBitmap bmright(imright);
+    fitwindowright->SetBitmap(bmright);
 
 
     delete[] dataleft;
