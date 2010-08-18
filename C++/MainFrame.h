@@ -47,6 +47,8 @@ class MainFrame: public wxFrame {
 
   bool dataloaded;
 
+  uchar *dataleft, *dataright;
+
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
 	ID_sliderRight};
 

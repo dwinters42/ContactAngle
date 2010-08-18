@@ -157,8 +157,17 @@ void MainFrame::loadFile(wxCommandEvent &event)
 
       sliderFramenum->SetRange(0, numframes-1);
       sliderThres->SetValue(threshold);
+      sliderFitpoints->SetRange(1,fheight);
+
+      int defaultfitpoints = 80;
+      if (defaultfitpoints>fheight)
+	defaultfitpoints=fheight;
+      sliderFitpoints->SetValue(defaultfitpoints);
+
       sliderLeft->SetRange(0,fheight-1);
+      sliderLeft->SetValue(fheight/2);
       sliderRight->SetRange(0,fheight-1);
+      sliderRight->SetValue(fheight/2);
 
       dataloaded=true;
 
@@ -209,10 +218,51 @@ void MainFrame::process(wxScrollEvent &event) {
       bl=baseleft;
       br=baseright;
     }
-    
+
     cv::cvtColor(edges, frame, CV_GRAY2BGR);
     
-    wxImage plot(fwidth, fheight, (unsigned char*) frame.data, true);
+    int numofpoints=sliderFitpoints->GetValue();
+    int baseleft=sliderLeft->GetValue();
+    int baseright=sliderRight->GetValue();
+
+    dataleft = new uchar[numofpoints];
+    dataright = new uchar[numofpoints];
+
+    int row, col;
+
+    // left points
+
+    for (row=0; row<numofpoints; row++) {
+      const uchar* Mi = edges.ptr<uchar>(baseleft-numofpoints+row);
+      for (col=50; col<edges.cols-50; col++) {
+	if (Mi[col] == 0) {
+	  dataleft[row]=col;
+	  cv::circle(frame, cv::Point(col,baseleft-numofpoints+row),	\
+		     1, CV_RGB(0,0,255));
+	  break;
+	}
+      }
+    }
+
+    // right points
+
+    for (row=0; row<numofpoints; row++) {
+      const uchar* Mi = edges.ptr<uchar>(baseright-numofpoints+row);
+      for (col=edges.cols-50; col>50; col--) {
+	if (Mi[col] == 0) {
+	  dataright[row]=col;
+	  cv::circle(frame, cv::Point(col,baseright-numofpoints+row),	\
+		     1, CV_RGB(0,0,255));
+	  break;
+	}
+      }
+    }
+
+
+    delete[] dataleft;
+    delete[] dataright;
+
+    wxImage plot(fwidth, fheight, (uchar*) frame.data, true);
     wxBitmap bm(plot);
     
     plotwindow->SetClientSize(fwidth,fheight);
