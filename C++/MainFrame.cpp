@@ -303,8 +303,13 @@ void MainFrame::process(wxScrollEvent &event) {
     }
     polyfit(p,x,dataleft,2,numofpoints);
 
-    printarray(dataleft,numofpoints);
-    printarray(p,3);
+    // plot fitted line
+    for (i=0;i<numofpoints-1;i++) {
+      cv::line(fitleft, cv::Point((p[0]*i*i+p[1]*i+p[2]-min)*(200/(max-min)), \
+				  i*(480/numofpoints)),			\
+	       cv::Point((p[0]*(i+1)*(i+1)+p[1]*(i+1)+p[2]-min)*(200/(max-min)), \
+			 (i+1)*(480/numofpoints)), CV_RGB(0,0,255), 1, 8, 0);
+    }
 
     wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
     wxBitmap bmleft(imleft);
