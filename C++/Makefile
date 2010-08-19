@@ -2,12 +2,15 @@
 
 CXXFLAGS = -g -Wall $(shell pkg-config --cflags opencv) $(shell wx-config --cxxflags)
 LDFLAGS = $(shell pkg-config --libs opencv) $(shell wx-config --libs)
-#OPENCV_BUILD_3RDPARTY_LIBS = on
+
+CXXFILES=${wildcard *.cpp}
+OBJECTS=${patsubst %.cpp, %.o, ${CXXFILES}}
+HEADERS=${wildcard *.h}
 
 all: ContactAngle
 
-ContactAngle: main.o MainFrame.o
-	${CXX} -o ContactAngle ${LDFLAGS} main.o MainFrame.o
+ContactAngle: ${OBJECTS} ${HEADERS}
+	${CXX} -o ContactAngle ${LDFLAGS} ${OBJECTS}
 
 clean:
 	rm -rf ContactAngle *.o

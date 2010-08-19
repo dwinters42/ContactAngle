@@ -16,6 +16,7 @@
 
 
 #include "MainFrame.h"
+#include "fit.h"
 
 MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
   wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
@@ -234,8 +235,8 @@ void MainFrame::process(wxScrollEvent &event) {
     int baseleft=sliderLeft->GetValue();
     int baseright=sliderRight->GetValue();
 
-    dataleft = new int[numofpoints];
-    dataright = new int[numofpoints];
+    dataleft = new double[numofpoints];
+    dataright = new double[numofpoints];
 
     int row, col;
 
@@ -277,6 +278,7 @@ void MainFrame::process(wxScrollEvent &event) {
     // left 
     int i, min=fwidth, max=0;
 
+    // find minimum and maximum value for scaling in x
     for(i=0;i<numofpoints;i++) {
       if (dataleft[i]<min)
 	min=dataleft[i];
@@ -284,12 +286,25 @@ void MainFrame::process(wxScrollEvent &event) {
 	max=dataleft[i];
     }
 
+    // plot datapoints
     for (i=0;i<numofpoints;i++) {
       cv::circle(fitleft, cv::Point(\
 				    (dataleft[i]-min)*(200/(max-min)),\
 				    i*(480/numofpoints)),\
 		 3, CV_RGB(255,0,0),-1);
     }
+
+    // make a parabolic fit on the points, see fit.[cpp,h]
+    double *p = new double[3];
+    double *x = new double[numofpoints];
+
+    for (i=0;i<numofpoints;i++) {
+      x[i]=i;
+    }
+    polyfit(p,x,dataleft,2,numofpoints);
+
+    printarray(dataleft,numofpoints);
+    printarray(p,3);
 
     wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
     wxBitmap bmleft(imleft);
@@ -299,6 +314,7 @@ void MainFrame::process(wxScrollEvent &event) {
     min=fwidth;
     max=0;
 
+    // find minimum and maximum value for scaling in x
     for(i=0;i<numofpoints;i++) {
       if (dataright[i]<min)
 	min=dataright[i];
@@ -306,6 +322,7 @@ void MainFrame::process(wxScrollEvent &event) {
 	max=dataright[i];
     }
 
+    // plot datapoints
     for (i=0;i<numofpoints;i++) {
       cv::circle(fitright, cv::Point(\
 				    (dataright[i]-min)*(200/(max-min)),\
