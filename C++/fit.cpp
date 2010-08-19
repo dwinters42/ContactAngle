@@ -15,7 +15,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include "fit.h"
-#include <iostream>
+
 
 void printmatrix(cv::Mat mat) {
   int row, col; 
