@@ -14,6 +14,8 @@
 // TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <cmath>
+#define PI 3.14159265
 
 #include "MainFrame.h"
 #include "fit.h"
@@ -288,9 +290,8 @@ void MainFrame::process(wxScrollEvent &event) {
 
     // plot datapoints
     for (i=0;i<numofpoints;i++) {
-      cv::circle(fitleft, cv::Point(\
-				    (dataleft[i]-min)*(200/(max-min)),\
-				    i*(480/numofpoints)),\
+      cv::circle(fitleft, cv::Point((dataleft[i]-min)*(200/(max-min)),	\
+				    i*(480/numofpoints)),		\
 		 3, CV_RGB(255,0,0),-1);
     }
 
@@ -314,6 +315,14 @@ void MainFrame::process(wxScrollEvent &event) {
     wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
     wxBitmap bmleft(imleft);
     fitwindowleft->SetBitmap(bmleft);
+
+    double al;
+    if (p[1]<0)
+      al=180-(atan(1.0/abs(p[1]))*180.0/PI);
+    else
+      al=(atan(1.0/abs(p[1]))*180.0/PI);
+
+    std::cout << al << std::endl;
 
     // right 
     min=fwidth;
