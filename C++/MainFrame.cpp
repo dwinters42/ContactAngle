@@ -277,8 +277,8 @@ void MainFrame::process(wxScrollEvent &event) {
     cv::Mat fitright = cv::Mat::zeros(480,200,CV_8UC3);
     fitright=CV_RGB(255,255,255);
 
-    // left 
-    int i, min=fwidth, max=0;
+    // left
+    int i, min=fwidth, max=0; 
 
     // find minimum and maximum value for scaling in x
     for(i=0;i<numofpoints;i++) {
@@ -293,16 +293,22 @@ void MainFrame::process(wxScrollEvent &event) {
       cv::circle(fitleft, cv::Point((dataleft[i]-min)*(200/(max-min)),	\
 				    i*(480/numofpoints)),		\
 		 3, CV_RGB(255,0,0),-1);
+
     }
 
     // make a parabolic fit on the points, see fit.[cpp,h]
     double *p = new double[3];
     double *x = new double[numofpoints];
+    double offset;
 
+    offset = dataleft[0];
     for (i=0;i<numofpoints;i++) {
-      x[i]=i;
+      x[i]=numofpoints-i;
+      dataleft[i]=dataleft[i]-offset;
+      std::cout << dataleft[i] << std::endl;
     }
     polyfit(p,x,dataleft,2,numofpoints);
+    std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
 
     // plot fitted line
     for (i=0;i<numofpoints-1;i++) {
@@ -318,9 +324,9 @@ void MainFrame::process(wxScrollEvent &event) {
 
     double al;
     if (p[1]<0)
-      al=180-(atan(1.0/abs(p[1]))*180.0/PI);
+      al=180-(atan(-1/p[1])*180/PI);
     else
-      al=(atan(1.0/abs(p[1]))*180.0/PI);
+      al=atan(1/p[1])*180/PI;
 
     std::cout << al << std::endl;
 

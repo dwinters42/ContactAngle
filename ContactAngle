@@ -112,6 +112,9 @@ class ContactAngleFinder:
         subplot(121)
         plot(y,x,'bo')
         p=polyfit(x,y,2)
+        print x
+        print y
+        print p
         xx=arange(min(x),max(x)+3)
         plot(polyval(p,xx),xx,'g-')
         axis('equal')
