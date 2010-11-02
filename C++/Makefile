@@ -1,7 +1,7 @@
 #!/usr/bin/make
 
-CXXFLAGS = -g -Wall $(shell pkg-config --cflags opencv) $(shell wx-config --cxxflags)
-LDFLAGS = $(shell pkg-config --libs opencv) $(shell wx-config --libs)
+CXXFLAGS = -g -Wall $(shell pkg-config --cflags opencv plplotd-wxwidgets) $(shell wx-config --cxxflags)
+LDFLAGS = $(shell pkg-config --libs opencv plplotd-wxwidgets) $(shell wx-config --libs)
 
 CXXFILES=${wildcard *.cpp}
 OBJECTS=${patsubst %.cpp, %.o, ${CXXFILES}}

@@ -20,6 +20,9 @@
 #include "MainFrame.h"
 #include "fit.h"
 
+#define MAX(a, b) ((a)<(b)?(b):(a))
+#define MIN(a, b) ((a)<(b)?(a):(b))
+
 MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
   wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
@@ -57,9 +60,9 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   // plotting windows
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   plotwindow->SetMinSize(wxSize(640,480));
-  fitwindowleft = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
+  fitwindowleft = new wxPLplotwindow(panel, wxID_ANY);
   fitwindowleft->SetMinSize(wxSize(200,480));
-  fitwindowright = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
+  fitwindowright = new wxPLplotwindow(panel, wxID_ANY);
   fitwindowright->SetMinSize(wxSize(200,480));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
@@ -237,18 +240,27 @@ void MainFrame::process(wxScrollEvent &event) {
     int baseleft=sliderLeft->GetValue();
     int baseright=sliderRight->GetValue();
 
-    dataleft = new double[numofpoints];
-    dataright = new double[numofpoints];
+    int i, row, col;
 
-    int row, col;
+    PLFLT *yvals = new PLFLT[numofpoints];
+    for (i=0;i<numofpoints;i++)
+      yvals[i]=i;
 
-    // left points
+    PLFLT *dataleft = new PLFLT[numofpoints];
+    PLFLT *dataright = new PLFLT[numofpoints];
 
+    PLFLT min=1e30, max=1e-30; // XXX
+
+    // left contact angle
+
+    // first, find the data points
     for (row=0; row<numofpoints; row++) {
       const uchar* Mi = edges.ptr<uchar>(baseleft-numofpoints+row);
       for (col=50; col<edges.cols-50; col++) {
 	if (Mi[col] == 0) {
 	  dataleft[row]=col;
+
+	  // plot a dot in the image window
 	  cv::circle(frame, cv::Point(col,baseleft-numofpoints+row),	\
 		     1, CV_RGB(0,0,255));
 	  break;
@@ -256,6 +268,58 @@ void MainFrame::process(wxScrollEvent &event) {
       }
     }
 
+    for(i=0;i<numofpoints;i++) {
+      min=MIN(min, dataleft[i]);
+      max=MAX(max, dataleft[i]);
+    }
+
+    // then plot the data points in the left fit window
+    wxPLplotstream* plsleft=fitwindowleft->GetStream();
+    plsleft->scolbga(255,255,255,0.5);
+    plsleft->clear();
+    plsleft->env(min-2,max+2,0,numofpoints,0,-2);
+    plsleft->col0(9);
+    plsleft->ssym(0,3);
+    plsleft->sym(numofpoints,dataleft,yvals,850);
+    fitwindowleft->RenewPlot();
+
+    // // make a parabolic fit on the points, see fit.[cpp,h]
+    // double *p = new double[3];
+    // double *x = new double[numofpoints];
+    // double offset;
+
+    // offset = dataleft[0];
+    // for (i=0;i<numofpoints;i++) {
+    //   x[i]=numofpoints-i;
+    //   dataleft[i]=dataleft[i]-offset;
+    //   std::cout << dataleft[i] << std::endl;
+    // }
+    // polyfit(p,x,dataleft,2,numofpoints);
+    // std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
+
+    // // plot fitted line
+    // for (i=0;i<numofpoints-1;i++) {
+    //   cv::line(fitleft, cv::Point((p[0]*i*i+p[1]*i+p[2]-min)*(200/(max-min)), \
+    // 				  i*(480/numofpoints)),			\
+    // 	       cv::Point((p[0]*(i+1)*(i+1)+p[1]*(i+1)+p[2]-min)*(200/(max-min)), \
+    // 			 (i+1)*(480/numofpoints)), CV_RGB(0,0,255), 1, 8, 0);
+    // }
+
+    // wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
+    // wxBitmap bmleft(imleft);
+    // //fitwindowleft->SetBitmap(bmleft);
+
+
+
+    // double al;
+    // if (p[1]<0)
+    //   al=180-(atan(-1/p[1])*180/PI);
+    // else
+    //   al=atan(1/p[1])*180/PI;
+
+    // std::cout << al << std::endl;
+
+    // // right 
     // right points
 
     for (row=0; row<numofpoints; row++) {
@@ -270,89 +334,29 @@ void MainFrame::process(wxScrollEvent &event) {
       }
     }
 
-    // plot the fitwindows
 
-    cv::Mat fitleft = cv::Mat::zeros(480,200,CV_8UC3);
-    fitleft=CV_RGB(255,255,255);
-    cv::Mat fitright = cv::Mat::zeros(480,200,CV_8UC3);
-    fitright=CV_RGB(255,255,255);
+    // min=fwidth;
+    // max=0;
 
-    // left
-    int i, min=fwidth, max=0; 
+    // // find minimum and maximum value for scaling in x
+    // for(i=0;i<numofpoints;i++) {
+    //   if (dataright[i]<min)
+    // 	min=dataright[i];
+    //   if (dataright[i]>max)
+    // 	max=dataright[i];
+    // }
 
-    // find minimum and maximum value for scaling in x
-    for(i=0;i<numofpoints;i++) {
-      if (dataleft[i]<min)
-	min=dataleft[i];
-      if (dataleft[i]>max)
-	max=dataleft[i];
-    }
+    // // plot datapoints
+    // for (i=0;i<numofpoints;i++) {
+    //   cv::circle(fitright, cv::Point(\
+    // 				    (dataright[i]-min)*(200/(max-min)),\
+    // 				    i*(480/numofpoints)),\
+    // 		 3, CV_RGB(255,0,0),-1);
+    // }
 
-    // plot datapoints
-    for (i=0;i<numofpoints;i++) {
-      cv::circle(fitleft, cv::Point((dataleft[i]-min)*(200/(max-min)),	\
-				    i*(480/numofpoints)),		\
-		 3, CV_RGB(255,0,0),-1);
-
-    }
-
-    // make a parabolic fit on the points, see fit.[cpp,h]
-    double *p = new double[3];
-    double *x = new double[numofpoints];
-    double offset;
-
-    offset = dataleft[0];
-    for (i=0;i<numofpoints;i++) {
-      x[i]=numofpoints-i;
-      dataleft[i]=dataleft[i]-offset;
-      std::cout << dataleft[i] << std::endl;
-    }
-    polyfit(p,x,dataleft,2,numofpoints);
-    std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
-
-    // plot fitted line
-    for (i=0;i<numofpoints-1;i++) {
-      cv::line(fitleft, cv::Point((p[0]*i*i+p[1]*i+p[2]-min)*(200/(max-min)), \
-				  i*(480/numofpoints)),			\
-	       cv::Point((p[0]*(i+1)*(i+1)+p[1]*(i+1)+p[2]-min)*(200/(max-min)), \
-			 (i+1)*(480/numofpoints)), CV_RGB(0,0,255), 1, 8, 0);
-    }
-
-    wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
-    wxBitmap bmleft(imleft);
-    fitwindowleft->SetBitmap(bmleft);
-
-    double al;
-    if (p[1]<0)
-      al=180-(atan(-1/p[1])*180/PI);
-    else
-      al=atan(1/p[1])*180/PI;
-
-    std::cout << al << std::endl;
-
-    // right 
-    min=fwidth;
-    max=0;
-
-    // find minimum and maximum value for scaling in x
-    for(i=0;i<numofpoints;i++) {
-      if (dataright[i]<min)
-	min=dataright[i];
-      if (dataright[i]>max)
-	max=dataright[i];
-    }
-
-    // plot datapoints
-    for (i=0;i<numofpoints;i++) {
-      cv::circle(fitright, cv::Point(\
-				    (dataright[i]-min)*(200/(max-min)),\
-				    i*(480/numofpoints)),\
-		 3, CV_RGB(255,0,0),-1);
-    }
-
-    wxImage imright(fitright.cols, fitright.rows, (uchar*) fitright.data, true);
-    wxBitmap bmright(imright);
-    fitwindowright->SetBitmap(bmright);
+    // wxImage imright(fitright.cols, fitright.rows, (uchar*) fitright.data, true);
+    // wxBitmap bmright(imright);
+    // //fitwindowright->SetBitmap(bmright);
 
 
     delete[] dataleft;

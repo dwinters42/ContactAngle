@@ -27,6 +27,8 @@
 #include "cv.h"
 #include "highgui.h"
 
+#include "wxPLplotwindow.h"
+
 class MainFrame: public wxFrame {
  public:
   MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
@@ -47,8 +49,6 @@ class MainFrame: public wxFrame {
 
   bool dataloaded;
 
-  double *dataleft, *dataright;
-
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
 	ID_sliderRight};
 
@@ -58,8 +58,8 @@ class MainFrame: public wxFrame {
   wxStatusBar* statusbar;
   wxToolBar* toolbar;
   wxStaticBitmap* plotwindow;
-  wxStaticBitmap* fitwindowleft;
-  wxStaticBitmap* fitwindowright;
+  wxPLplotwindow* fitwindowleft;
+  wxPLplotwindow* fitwindowright;
   wxStaticLine* static_line_1;
   wxStaticText* label_1;
   wxSlider* sliderFramenum;
