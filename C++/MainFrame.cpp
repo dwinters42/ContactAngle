@@ -20,6 +20,12 @@
 #include "MainFrame.h"
 #include "fit.h"
 
+#if wxUSE_GRAPHICS_CONTEXT  
+#define BACKEND wxPLPLOT_BACKEND_GC | wxPLPLOT_DRAW_TEXT
+#else
+#define BACKEND wxPLPLOT_BACKEND_AGG | wxPLPLOT_DRAW_TEXT
+#endif
+
 #define MAX(a, b) ((a)<(b)?(b):(a))
 #define MIN(a, b) ((a)<(b)?(a):(b))
 
@@ -60,9 +66,11 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   // plotting windows
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   plotwindow->SetMinSize(wxSize(640,480));
-  fitwindowleft = new wxPLplotwindow(panel, wxID_ANY);
+  fitwindowleft = new wxPLplotwindow(panel, wxID_ANY, wxDefaultPosition, \
+				     wxDefaultSize, wxWANTS_CHARS, BACKEND);
   fitwindowleft->SetMinSize(wxSize(200,480));
-  fitwindowright = new wxPLplotwindow(panel, wxID_ANY);
+  fitwindowright = new wxPLplotwindow(panel, wxID_ANY, wxDefaultPosition, \
+				     wxDefaultSize, wxWANTS_CHARS, BACKEND);
   fitwindowright->SetMinSize(wxSize(200,480));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
@@ -258,7 +266,7 @@ void MainFrame::process(wxScrollEvent &event) {
       const uchar* Mi = edges.ptr<uchar>(baseleft-numofpoints+row);
       for (col=50; col<edges.cols-50; col++) {
 	if (Mi[col] == 0) {
-	  dataleft[row]=col;
+	  dataleft[numofpoints-row-1]=col;
 
 	  // plot a dot in the image window
 	  cv::circle(frame, cv::Point(col,baseleft-numofpoints+row),	\
@@ -275,29 +283,37 @@ void MainFrame::process(wxScrollEvent &event) {
 
     // then plot the data points in the left fit window
     wxPLplotstream* plsleft=fitwindowleft->GetStream();
-    plsleft->scolbga(255,255,255,0.5);
+    plsleft->scolbga(255,255,255,1);
     plsleft->clear();
-    plsleft->env(min-2,max+2,0,numofpoints,0,-2);
     plsleft->col0(9);
-    plsleft->ssym(0,3);
+    plsleft->env(min-2,max+2,0,numofpoints,0,1);
+    plsleft->ssym(0,2);
     plsleft->sym(numofpoints,dataleft,yvals,850);
-    fitwindowleft->RenewPlot();
 
     // // make a parabolic fit on the points, see fit.[cpp,h]
-    // double *p = new double[3];
-    // double *x = new double[numofpoints];
-    // double offset;
+    double *p = new double[3];
+    double *x = new double[numofpoints];
+    double offset;
 
-    // offset = dataleft[0];
-    // for (i=0;i<numofpoints;i++) {
-    //   x[i]=numofpoints-i;
-    //   dataleft[i]=dataleft[i]-offset;
-    //   std::cout << dataleft[i] << std::endl;
-    // }
-    // polyfit(p,x,dataleft,2,numofpoints);
-    // std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
+    offset=dataleft[0];
+    for (i=0;i<numofpoints;i++) {
+      x[i]=i;
+      dataleft[i]=dataleft[i]-offset;
+    }
+    polyfit(p,x,dataleft,2,numofpoints);
+    std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
 
-    // // plot fitted line
+    // plot fitted line
+    PLFLT *fitdata = new PLFLT[numofpoints];
+    for (i=0;i<numofpoints;i++)
+      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offset;
+
+    plsleft->col0(1);
+    plsleft->wid(2);
+    plsleft->line(numofpoints,fitdata,x);    
+
+    fitwindowleft->RenewPlot();    
+
     // for (i=0;i<numofpoints-1;i++) {
     //   cv::line(fitleft, cv::Point((p[0]*i*i+p[1]*i+p[2]-min)*(200/(max-min)), \
     // 				  i*(480/numofpoints)),			\
@@ -309,15 +325,13 @@ void MainFrame::process(wxScrollEvent &event) {
     // wxBitmap bmleft(imleft);
     // //fitwindowleft->SetBitmap(bmleft);
 
+    double al;
+    if (p[1]<0)
+      al=180-(atan(-1/p[1])*180/PI);
+    else
+      al=atan(1/p[1])*180/PI;
 
-
-    // double al;
-    // if (p[1]<0)
-    //   al=180-(atan(-1/p[1])*180/PI);
-    // else
-    //   al=atan(1/p[1])*180/PI;
-
-    // std::cout << al << std::endl;
+    std::cout << al << std::endl;
 
     // // right 
     // right points
@@ -326,7 +340,7 @@ void MainFrame::process(wxScrollEvent &event) {
       const uchar* Mi = edges.ptr<uchar>(baseright-numofpoints+row);
       for (col=edges.cols-50; col>50; col--) {
 	if (Mi[col] == 0) {
-	  dataright[row]=col;
+	  dataright[numofpoints-row-1]=col;
 	  cv::circle(frame, cv::Point(col,baseright-numofpoints+row),	\
 		     1, CV_RGB(0,0,255));
 	  break;
