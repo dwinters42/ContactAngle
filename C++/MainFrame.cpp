@@ -254,9 +254,9 @@ void MainFrame::process(wxScrollEvent &event) {
     PLFLT *dataleft = new PLFLT[numofpoints];
     PLFLT *dataright = new PLFLT[numofpoints];
 
-    PLFLT min=1e30, max=1e-30; // XXX
+    PLFLT min, max;
 
-    // left contact angle
+    // #### left contact angle ###
 
     // first, find the data points
     for (row=0; row<numofpoints; row++) {
@@ -273,6 +273,9 @@ void MainFrame::process(wxScrollEvent &event) {
       }
     }
 
+    min=1e30;
+    max=1e-30; // XXX
+
     for(i=0;i<numofpoints;i++) {
       min=MIN(min, dataleft[i]);
       max=MAX(max, dataleft[i]);
@@ -287,7 +290,7 @@ void MainFrame::process(wxScrollEvent &event) {
     plsleft->ssym(0,2);
     plsleft->sym(numofpoints,dataleft,yvals,850);
 
-    // // make a parabolic fit on the points, see fit.[cpp,h]
+    // make a parabolic fit on the points, see fit.[cpp,h]
     double *p = new double[3];
     double *x = new double[numofpoints];
     double offset;
@@ -298,7 +301,6 @@ void MainFrame::process(wxScrollEvent &event) {
       dataleft[i]=dataleft[i]-offset;
     }
     polyfit(p,x,dataleft,2,numofpoints);
-    std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
 
     // plot fitted line
     PLFLT *fitdata = new PLFLT[numofpoints];
@@ -308,31 +310,20 @@ void MainFrame::process(wxScrollEvent &event) {
     plsleft->col0(1);
     plsleft->wid(2);
     plsleft->line(numofpoints,fitdata,x);    
+    fitwindowleft->RenewPlot();
 
-    fitwindowleft->RenewPlot();    
-
-    // for (i=0;i<numofpoints-1;i++) {
-    //   cv::line(fitleft, cv::Point((p[0]*i*i+p[1]*i+p[2]-min)*(200/(max-min)), \
-    // 				  i*(480/numofpoints)),			\
-    // 	       cv::Point((p[0]*(i+1)*(i+1)+p[1]*(i+1)+p[2]-min)*(200/(max-min)), \
-    // 			 (i+1)*(480/numofpoints)), CV_RGB(0,0,255), 1, 8, 0);
-    // }
-
-    // wxImage imleft(fitleft.cols, fitleft.rows, (uchar*) fitleft.data, true);
-    // wxBitmap bmleft(imleft);
-    // //fitwindowleft->SetBitmap(bmleft);
-
+    // calculate contact angle
     double al;
     if (p[1]<0)
       al=180-(atan(-1/p[1])*180/PI);
     else
       al=atan(1/p[1])*180/PI;
 
-    std::cout << al << std::endl;
+    std::cout << al;
 
-    // // right 
-    // right points
+    // ### right contact angle ### 
 
+    // right data points
     for (row=0; row<numofpoints; row++) {
       const uchar* Mi = edges.ptr<uchar>(baseright-numofpoints+row);
       for (col=edges.cols-50; col>50; col--) {
@@ -345,31 +336,50 @@ void MainFrame::process(wxScrollEvent &event) {
       }
     }
 
+    min=1e30;
+    max=1e-30; // XXX
 
-    // min=fwidth;
-    // max=0;
+    for(i=0;i<numofpoints;i++) {
+      min=MIN(min, dataright[i]);
+      max=MAX(max, dataright[i]);
+    }
 
-    // // find minimum and maximum value for scaling in x
-    // for(i=0;i<numofpoints;i++) {
-    //   if (dataright[i]<min)
-    // 	min=dataright[i];
-    //   if (dataright[i]>max)
-    // 	max=dataright[i];
-    // }
+    // then plot the data points in the right fit window
+    wxPLplotstream* plsright=fitwindowright->GetStream();
+    plsright->scolbga(255,255,255,1);
+    plsright->clear();
+    plsright->col0(9);
+    plsright->env(min-2,max+2,0,numofpoints,0,1);
+    plsright->ssym(0,2);
+    plsright->sym(numofpoints,dataright,yvals,850);
 
-    // // plot datapoints
-    // for (i=0;i<numofpoints;i++) {
-    //   cv::circle(fitright, cv::Point(\
-    // 				    (dataright[i]-min)*(200/(max-min)),\
-    // 				    i*(480/numofpoints)),\
-    // 		 3, CV_RGB(255,0,0),-1);
-    // }
+    // make a parabolic fit on the points, see fit.[cpp,h]
+    offset=dataright[0];
+    for (i=0;i<numofpoints;i++) {
+      x[i]=i;
+      dataright[i]=dataright[i]-offset;
+    }
+    polyfit(p,x,dataright,2,numofpoints);
 
-    // wxImage imright(fitright.cols, fitright.rows, (uchar*) fitright.data, true);
-    // wxBitmap bmright(imright);
-    // //fitwindowright->SetBitmap(bmright);
+    // plot fitted line
+    for (i=0;i<numofpoints;i++)
+      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offset;
 
+    plsright->col0(1);
+    plsright->wid(2);
+    plsright->line(numofpoints,fitdata,x);    
+    fitwindowright->RenewPlot();
 
+    // calculate contact angle
+    double ar;
+    if (p[1]>0)
+      ar=180-(atan(1/p[1])*180/PI);
+    else
+      ar=atan(-1/p[1])*180/PI;
+
+    std::cout << " "  << ar << std::endl;
+
+    // cleanup
     delete[] dataleft;
     delete[] dataright;
 
