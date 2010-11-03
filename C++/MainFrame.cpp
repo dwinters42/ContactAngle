@@ -26,9 +26,6 @@
 #define BACKEND wxPLPLOT_BACKEND_AGG | wxPLPLOT_DRAW_TEXT
 #endif
 
-#define MAX(a, b) ((a)<(b)?(b):(a))
-#define MIN(a, b) ((a)<(b)?(a):(b))
-
 MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
   wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
