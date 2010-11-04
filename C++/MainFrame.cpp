@@ -15,10 +15,12 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <cmath>
-#define PI 3.14159265
+#include <cstdio>
 
 #include "MainFrame.h"
 #include "fit.h"
+
+#define PI 3.14159265
 
 #if wxUSE_GRAPHICS_CONTEXT  
 #define BACKEND wxPLPLOT_BACKEND_GC | wxPLPLOT_DRAW_TEXT
@@ -274,7 +276,7 @@ void MainFrame::process(wxScrollEvent &event) {
     }
 
     min=1e30;
-    max=1e-30; // XXX
+    max=1e-30;
 
     for(i=0;i<numofpoints;i++) {
       min=MIN(min, dataleft[i]);
@@ -293,19 +295,19 @@ void MainFrame::process(wxScrollEvent &event) {
     // make a parabolic fit on the points, see fit.[cpp,h]
     double *p = new double[3];
     double *x = new double[numofpoints];
-    double offset;
+    double offsetleft, offsetright;
 
-    offset=dataleft[0];
+    offsetleft=dataleft[0];
     for (i=0;i<numofpoints;i++) {
       x[i]=i;
-      dataleft[i]=dataleft[i]-offset;
+      dataleft[i]=dataleft[i]-offsetleft;
     }
     polyfit(p,x,dataleft,2,numofpoints);
 
     // plot fitted line
     PLFLT *fitdata = new PLFLT[numofpoints];
     for (i=0;i<numofpoints;i++)
-      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offset;
+      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetleft;
 
     plsleft->col0(1);
     plsleft->wid(2);
@@ -337,7 +339,7 @@ void MainFrame::process(wxScrollEvent &event) {
     }
 
     min=1e30;
-    max=1e-30; // XXX
+    max=1e-30;
 
     for(i=0;i<numofpoints;i++) {
       min=MIN(min, dataright[i]);
@@ -354,16 +356,16 @@ void MainFrame::process(wxScrollEvent &event) {
     plsright->sym(numofpoints,dataright,yvals,850);
 
     // make a parabolic fit on the points, see fit.[cpp,h]
-    offset=dataright[0];
+    offsetright=dataright[0];
     for (i=0;i<numofpoints;i++) {
       x[i]=i;
-      dataright[i]=dataright[i]-offset;
+      dataright[i]=dataright[i]-offsetright;
     }
     polyfit(p,x,dataright,2,numofpoints);
 
     // plot fitted line
     for (i=0;i<numofpoints;i++)
-      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offset;
+      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetright;
 
     plsright->col0(1);
     plsright->wid(2);
@@ -383,6 +385,59 @@ void MainFrame::process(wxScrollEvent &event) {
     delete[] dataleft;
     delete[] dataright;
 
+    // ### plot lines showing the contact angles
+
+    cv::Point2i basepointleft(offsetleft, baseleft);
+    cv::Point2i basepointright(offsetright, baseright);
+    cv::Point2i endpoint;
+
+    cv::line(frame,basepointleft,basepointright,CV_RGB(255,255,0));
+
+    // draw lines showing the contact angles
+    if (al>90.0) {
+      endpoint.x=basepointleft.x-100;
+      endpoint.y=basepointleft.y-100*tan((180-al)/180*PI);
+      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+    }
+    else if (al<90.0) {
+      endpoint.x=basepointleft.x+100;
+      endpoint.y=basepointleft.y-100*tan((al)/180*PI);
+      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+    }
+    else {
+      endpoint.x=basepointleft.x;
+      endpoint.y=basepointleft.y+50;
+      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+    }
+
+    if (ar>90.0) {
+      endpoint.x=basepointright.x+100;
+      endpoint.y=basepointright.y-100*tan((180-ar)/180*PI);
+      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+    }
+    else if (ar<90.0) {
+      endpoint.x=basepointright.x-100;
+      endpoint.y=basepointright.y-100*tan((ar)/180*PI);
+      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+    }
+    else {
+      endpoint.x=basepointright.x;
+      endpoint.y=basepointright.y+50;
+      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+    }
+
+    // finally, also print the contact angle as a number
+    char posstring[7];
+    sprintf(posstring,"%.2f", al);
+    cv::Point labelposleft(basepointleft.x-70, basepointleft.y);
+    cv::putText(frame, posstring, labelposleft, \
+		cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
+    sprintf(posstring,"%.2f", ar);
+    cv::Point labelposright(basepointright.x+15, basepointright.y);
+    cv::putText(frame, posstring, labelposright, \
+		cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
+
+    // show the droplet image
     wxImage plot(fwidth, fheight, (uchar*) frame.data, true);
     wxBitmap bm(plot);
     
