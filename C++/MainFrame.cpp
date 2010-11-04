@@ -17,6 +17,8 @@
 #include <cmath>
 #include <cstdio>
 
+#include <wx/file.h>
+
 #include "MainFrame.h"
 #include "fit.h"
 
@@ -57,7 +59,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
 		   wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxT("Load video or image"),\
 		   wxEmptyString);
-  toolbar->AddTool(wxID_ANY, wxT("Analyze"),\
+  toolbar->AddTool(ID_processAll, wxT("Analyze Movie"),\
 		   wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
   toolbar->Realize();
@@ -152,6 +154,7 @@ BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN, MainFrame::loadFile)
 EVT_MENU(wxID_EXIT, MainFrame::onExit)
 EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
+EVT_MENU(ID_processAll, MainFrame::processAll)
 EVT_SCROLL(MainFrame::process)
 END_EVENT_TABLE();
 
@@ -207,11 +210,42 @@ void MainFrame::onExit(wxCommandEvent &event)
 void MainFrame::onAbout(wxCommandEvent &event)
 {
   wxAboutDialogInfo info;
-  info.SetDescription(wxT("measures contact angles"));
+  info.SetDescription(wxT("measure contact angles in videos"));
   info.SetCopyright(wxT("(C) 2010 Daniel Gruber <daniel.gruber@tydirium.org>"));
 
   wxAboutBox(info);
 }
+
+void MainFrame::processAll(wxCommandEvent &event) {
+  int i;
+  wxScrollEvent dummy;
+
+  if (!dataloaded) {
+    wxMessageBox(wxT("No data loaded!"), wxT("Error"), wxOK);
+    return;
+  }
+
+  wxString outfilename = filename + wxT(".txt");
+  
+  if (wxFile::Exists(outfilename)) {
+    if (wxMessageBox(wxT("File exists, overwrite?"), wxT("Confirm"),wxYES_NO)==wxNO)
+      return;
+  }
+  
+  wxFile outfile(outfilename,wxFile::write);
+  wxString str;
+
+  wxBeginBusyCursor();
+  for (i=1; i<=numframes; i++) {
+    sliderFramenum->SetValue(i);
+    process(dummy);
+    str.Printf(wxT("%i, %f, %f\n"),i,al,ar);
+    outfile.Write(str);
+    wxYield();
+  }
+  wxEndBusyCursor();
+}
+
 
 void MainFrame::process(wxScrollEvent &event) {
 
@@ -219,7 +253,7 @@ void MainFrame::process(wxScrollEvent &event) {
     cv::Mat frame;
     int bl, br;
 
-    cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue());
+    cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue()-1);
     cap >> frame;
 
     cv::Mat edges(fheight,fwidth,CV_8UC1);
@@ -315,13 +349,10 @@ void MainFrame::process(wxScrollEvent &event) {
     fitwindowleft->RenewPlot();
 
     // calculate contact angle
-    double al;
     if (p[1]<0)
       al=180-(atan(-1/p[1])*180/PI);
     else
       al=atan(1/p[1])*180/PI;
-
-    std::cout << al;
 
     // ### right contact angle ### 
 
@@ -373,13 +404,10 @@ void MainFrame::process(wxScrollEvent &event) {
     fitwindowright->RenewPlot();
 
     // calculate contact angle
-    double ar;
     if (p[1]>0)
       ar=180-(atan(1/p[1])*180/PI);
     else
       ar=atan(-1/p[1])*180/PI;
-
-    std::cout << " "  << ar << std::endl;
 
     // cleanup
     delete[] dataleft;

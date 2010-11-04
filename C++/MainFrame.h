@@ -46,11 +46,12 @@ class MainFrame: public wxFrame {
   int fwidth;
   int fheight;
   int numframes;
+  double al, ar;
 
   bool dataloaded;
 
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
-	ID_sliderRight};
+	ID_sliderRight, ID_processAll};
 
  protected:
   wxPanel* panel;
@@ -78,6 +79,7 @@ class MainFrame: public wxFrame {
   virtual void loadFile(wxCommandEvent &event);
   virtual void onExit(wxCommandEvent &event);
   virtual void onAbout(wxCommandEvent &event);
+  virtual void processAll(wxCommandEvent &event);
   virtual void process(wxScrollEvent &event);
 };
 
