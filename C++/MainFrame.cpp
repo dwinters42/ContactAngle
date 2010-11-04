@@ -212,6 +212,7 @@ void MainFrame::onAbout(wxCommandEvent &event)
   wxAboutDialogInfo info;
   info.SetDescription(wxT("measure contact angles in videos"));
   info.SetCopyright(wxT("(C) 2010 Daniel Gruber <daniel.gruber@tydirium.org>"));
+  info.SetVersion(wxT("Version VERSION_MAJOR.VERSION_MINOR"));
 
   wxAboutBox(info);
 }

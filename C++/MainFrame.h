@@ -26,8 +26,8 @@
 
 #include "cv.h"
 #include "highgui.h"
-
 #include "wxPLplotwindow.h"
+#include "config.h"
 
 class MainFrame: public wxFrame {
  public:
