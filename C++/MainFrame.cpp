@@ -24,12 +24,6 @@
 
 #define PI 3.14159265
 
-#if wxUSE_GRAPHICS_CONTEXT  
-#define BACKEND wxPLPLOT_BACKEND_GC | wxPLPLOT_DRAW_TEXT
-#else
-#define BACKEND wxPLPLOT_BACKEND_AGG | wxPLPLOT_DRAW_TEXT
-#endif
-
 MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
   wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
@@ -67,11 +61,9 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   // plotting windows
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   plotwindow->SetMinSize(wxSize(640,480));
-  fitwindowleft = new wxPLplotwindow(panel, wxID_ANY, wxDefaultPosition, \
-				     wxDefaultSize, wxWANTS_CHARS, BACKEND);
+  fitwindowleft = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   fitwindowleft->SetMinSize(wxSize(200,480));
-  fitwindowright = new wxPLplotwindow(panel, wxID_ANY, wxDefaultPosition, \
-				     wxDefaultSize, wxWANTS_CHARS, BACKEND);
+  fitwindowright = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
   fitwindowright->SetMinSize(wxSize(200,480));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
@@ -284,14 +276,14 @@ void MainFrame::process(wxScrollEvent &event) {
 
     int i, row, col;
 
-    PLFLT *yvals = new PLFLT[numofpoints];
+    double *yvals = new double[numofpoints];
     for (i=0;i<numofpoints;i++)
       yvals[i]=i;
 
-    PLFLT *dataleft = new PLFLT[numofpoints];
-    PLFLT *dataright = new PLFLT[numofpoints];
+    double *dataleft = new double[numofpoints];
+    double *dataright = new double[numofpoints];
 
-    PLFLT min, max;
+    double min, max;
 
     // #### left contact angle ###
 
@@ -318,14 +310,28 @@ void MainFrame::process(wxScrollEvent &event) {
       max=MAX(max, dataleft[i]);
     }
 
-    // then plot the data points in the left fit window
-    wxPLplotstream* plsleft=fitwindowleft->GetStream();
-    plsleft->scolbga(255,255,255,1);
-    plsleft->clear();
-    plsleft->col0(9);
-    plsleft->env(min-2,max+2,0,numofpoints,0,1);
-    plsleft->ssym(0,2);
-    plsleft->sym(numofpoints,dataleft,yvals,850);
+    int width, height;
+    fitwindowleft->GetClientSize(&width,&height);
+
+    wxMemoryDC memDC;
+    wxBitmap bmleft(width,height);
+
+    memDC.SelectObject(bmleft);
+    memDC.SetBackground(*wxWHITE_BRUSH);
+    memDC.Clear();
+    memDC.SetPen(*wxBLACK);
+    memDC.SetBrush(*wxBLUE_BRUSH);
+
+    double xstep=width/(max-min);
+    double ystep=height/numofpoints;
+    int xpos,ypos;
+
+    // draw data points
+    for (i=0;i<numofpoints;i++) {
+      xpos=(dataleft[i]-min)*xstep;
+      ypos=height-yvals[i]*ystep;
+      memDC.DrawCircle(xpos,ypos,4);
+    }      
 
     // make a parabolic fit on the points, see fit.[cpp,h]
     double *p = new double[3];
@@ -340,14 +346,19 @@ void MainFrame::process(wxScrollEvent &event) {
     polyfit(p,x,dataleft,2,numofpoints);
 
     // plot fitted line
-    PLFLT *fitdata = new PLFLT[numofpoints];
-    for (i=0;i<numofpoints;i++)
+    memDC.SetPen(*wxRED);
+    memDC.SetBrush(*wxRED_BRUSH);
+
+    double *fitdata = new double[numofpoints];
+    fitdata[0]=p[2]+offsetleft;
+    for (i=1;i<numofpoints;i++) {
       fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetleft;
 
-    plsleft->col0(1);
-    plsleft->wid(2);
-    plsleft->line(numofpoints,fitdata,x);    
-    fitwindowleft->RenewPlot();
+      memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
+		     (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
+    }
+    memDC.SelectObject(wxNullBitmap);
+    fitwindowleft->SetBitmap(bmleft);
 
     // calculate contact angle
     if (p[1]<0)
@@ -378,14 +389,25 @@ void MainFrame::process(wxScrollEvent &event) {
       max=MAX(max, dataright[i]);
     }
 
-    // then plot the data points in the right fit window
-    wxPLplotstream* plsright=fitwindowright->GetStream();
-    plsright->scolbga(255,255,255,1);
-    plsright->clear();
-    plsright->col0(9);
-    plsright->env(min-2,max+2,0,numofpoints,0,1);
-    plsright->ssym(0,2);
-    plsright->sym(numofpoints,dataright,yvals,850);
+    fitwindowright->GetClientSize(&width,&height);
+
+    wxBitmap bmright(width,height);
+
+    memDC.SelectObject(bmright);
+    memDC.SetBackground(*wxWHITE_BRUSH);
+    memDC.Clear();
+    memDC.SetPen(*wxBLACK);
+    memDC.SetBrush(*wxBLUE_BRUSH);
+
+    xstep=width/(max-min);
+    ystep=height/numofpoints;
+
+    // draw data points
+    for (i=0;i<numofpoints;i++) {
+      xpos=(dataright[i]-min)*xstep;
+      ypos=height-yvals[i]*ystep;
+      memDC.DrawCircle(xpos,ypos,4);
+    }      
 
     // make a parabolic fit on the points, see fit.[cpp,h]
     offsetright=dataright[0];
@@ -396,13 +418,18 @@ void MainFrame::process(wxScrollEvent &event) {
     polyfit(p,x,dataright,2,numofpoints);
 
     // plot fitted line
-    for (i=0;i<numofpoints;i++)
+    memDC.SetPen(*wxRED);
+    memDC.SetBrush(*wxRED_BRUSH);
+
+    fitdata[0]=p[2]+offsetright;
+    for (i=1;i<numofpoints;i++) {
       fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetright;
 
-    plsright->col0(1);
-    plsright->wid(2);
-    plsright->line(numofpoints,fitdata,x);    
-    fitwindowright->RenewPlot();
+      memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
+		     (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
+    }
+    memDC.SelectObject(wxNullBitmap);
+    fitwindowright->SetBitmap(bmright);
 
     // calculate contact angle
     if (p[1]>0)

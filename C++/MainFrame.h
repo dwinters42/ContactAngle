@@ -26,7 +26,6 @@
 
 #include "cv.h"
 #include "highgui.h"
-#include "wxPLplotwindow.h"
 #include "config.h"
 
 class MainFrame: public wxFrame {
@@ -59,8 +58,8 @@ class MainFrame: public wxFrame {
   wxStatusBar* statusbar;
   wxToolBar* toolbar;
   wxStaticBitmap* plotwindow;
-  wxPLplotwindow* fitwindowleft;
-  wxPLplotwindow* fitwindowright;
+  wxStaticBitmap* fitwindowleft;
+  wxStaticBitmap* fitwindowright;
   wxStaticLine* static_line_1;
   wxStaticText* label_1;
   wxSlider* sliderFramenum;
