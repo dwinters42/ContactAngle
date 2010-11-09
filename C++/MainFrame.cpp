@@ -153,7 +153,9 @@ END_EVENT_TABLE();
 
 void MainFrame::loadFile(wxCommandEvent &event)
 {
-  wxFileDialog *dlg = new wxFileDialog(this);
+  wxFileDialog *dlg = new wxFileDialog(this, wxT("Choose a video file"), \
+				       wxT(""), wxT(""), wxT("*.*"), \
+				       wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_CHANGE_DIR);
   if (dlg->ShowModal() == wxID_OK) {
     filename=dlg->GetPath();
 
