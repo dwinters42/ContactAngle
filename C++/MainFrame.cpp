@@ -242,6 +242,10 @@ void MainFrame::processAll(wxCommandEvent &event) {
 
   sliderFramenum->SetValue(1);
   process(dummy);
+
+  str=wxT("Successfully wrote output file ") + outfilename + wxT(".");
+  wxMessageBox(str, wxT("Success"),wxOK);
+
 }
 
 
