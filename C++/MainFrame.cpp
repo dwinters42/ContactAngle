@@ -172,9 +172,11 @@ void MainFrame::loadFile(wxCommandEvent &event)
       fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
       numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
 
-      sliderFramenum->SetRange(0, numframes-1);
+      sliderFramenum->SetRange(1, numframes);
       sliderThres->SetValue(threshold);
       sliderFitpoints->SetRange(1,fheight);
+
+      sliderFramenum->SetValue(1);
 
       int defaultfitpoints = 80;
       if (defaultfitpoints>fheight)
@@ -237,6 +239,9 @@ void MainFrame::processAll(wxCommandEvent &event) {
     wxYield();
   }
   wxEndBusyCursor();
+
+  sliderFramenum->SetValue(1);
+  process(dummy);
 }
 
 
