@@ -230,6 +230,18 @@ void MainFrame::processAll(wxCommandEvent &event) {
   wxFile outfile(outfilename,wxFile::write);
   wxString str;
 
+  // print file header
+  outfile.Write(wxT("# contact angle data for file ")+filename+wxT("\n"));
+  str.Printf(wxT("# thresh = %i\n"),sliderThres->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# baseleft = %i\n"),sliderLeft->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# baseright = %i\n"),sliderRight->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# numoffitpoints = %i\n"),sliderFitpoints->GetValue());
+  outfile.Write(str);
+
+  // do the actual work
   wxBeginBusyCursor();
   for (i=1; i<=numframes; i++) {
     sliderFramenum->SetValue(i);
