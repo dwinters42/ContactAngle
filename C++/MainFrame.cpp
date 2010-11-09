@@ -116,10 +116,6 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizerThres->Add(sliderThres, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerThres, 0, wxEXPAND, 5);
 
-  sizerFitpoints->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizerFitpoints->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  MainSizer->Add(sizerFitpoints, 0, wxEXPAND, 5);
-
   sizerLeft->Add(label_4, 0, wxALIGN_CENTER_VERTICAL, 5);
   sizerLeft->Add(sliderLeft, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerLeft, 0, wxEXPAND, 5);
@@ -127,6 +123,10 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizerRight->Add(label_5, 0, wxALIGN_CENTER_VERTICAL, 5);
   sizerRight->Add(sliderRight, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerRight, 0, wxEXPAND, 5);
+
+  sizerFitpoints->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerFitpoints->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerFitpoints, 0, wxEXPAND, 5);
 
   panel->SetSizer(MainSizer);
   MainMainsizer->Add(panel, 1, wxEXPAND, 5);
