@@ -116,10 +116,6 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizerThres->Add(sliderThres, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerThres, 0, wxEXPAND, 5);
 
-  sizerFitpoints->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
-  sizerFitpoints->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
-  MainSizer->Add(sizerFitpoints, 0, wxEXPAND, 5);
-
   sizerLeft->Add(label_4, 0, wxALIGN_CENTER_VERTICAL, 5);
   sizerLeft->Add(sliderLeft, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerLeft, 0, wxEXPAND, 5);
@@ -127,6 +123,10 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   sizerRight->Add(label_5, 0, wxALIGN_CENTER_VERTICAL, 5);
   sizerRight->Add(sliderRight, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
   MainSizer->Add(sizerRight, 0, wxEXPAND, 5);
+
+  sizerFitpoints->Add(label_3, 0, wxALIGN_CENTER_VERTICAL, 5);
+  sizerFitpoints->Add(sliderFitpoints, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+  MainSizer->Add(sizerFitpoints, 0, wxEXPAND, 5);
 
   panel->SetSizer(MainSizer);
   MainMainsizer->Add(panel, 1, wxEXPAND, 5);
@@ -174,9 +174,11 @@ void MainFrame::loadFile(wxCommandEvent &event)
       fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
       numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
 
-      sliderFramenum->SetRange(0, numframes-1);
+      sliderFramenum->SetRange(1, numframes);
       sliderThres->SetValue(threshold);
       sliderFitpoints->SetRange(1,fheight);
+
+      sliderFramenum->SetValue(1);
 
       int defaultfitpoints = 80;
       if (defaultfitpoints>fheight)
@@ -230,6 +232,18 @@ void MainFrame::processAll(wxCommandEvent &event) {
   wxFile outfile(outfilename,wxFile::write);
   wxString str;
 
+  // print file header
+  outfile.Write(wxT("# contact angle data for file ")+filename+wxT("\n"));
+  str.Printf(wxT("# thresh = %i\n"),sliderThres->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# baseleft = %i\n"),sliderLeft->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# baseright = %i\n"),sliderRight->GetValue());
+  outfile.Write(str);
+  str.Printf(wxT("# numoffitpoints = %i\n"),sliderFitpoints->GetValue());
+  outfile.Write(str);
+
+  // do the actual work
   wxBeginBusyCursor();
   for (i=1; i<=numframes; i++) {
     sliderFramenum->SetValue(i);
@@ -239,6 +253,13 @@ void MainFrame::processAll(wxCommandEvent &event) {
     wxYield();
   }
   wxEndBusyCursor();
+
+  sliderFramenum->SetValue(1);
+  process(dummy);
+
+  str=wxT("Successfully wrote output file ") + outfilename + wxT(".");
+  wxMessageBox(str, wxT("Success"),wxOK);
+
 }
 
 
