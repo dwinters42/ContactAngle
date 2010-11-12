@@ -258,6 +258,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   process(dummy);
 
   str=wxT("Successfully wrote output file ") + outfilename + wxT(".");
+  statusbar->SetStatusText(str);
   wxMessageBox(str, wxT("Success"),wxOK);
 
 }
