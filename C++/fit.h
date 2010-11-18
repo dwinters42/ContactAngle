@@ -19,7 +19,12 @@
 #define FIT_H
 
 #include <iostream>
-#include <cv.h>
+
+#ifdef _WIN32
+#include "opencv/cv.h"
+#else
+#include "cv.h"
+#endif
 
 void printarray(double *, int);
 void printmatrix(cv::Mat);

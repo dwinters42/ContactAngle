@@ -21,11 +21,19 @@
 #include <wx/image.h>
 #include <wx/statline.h>
 #include <wx/artprov.h>
+#ifndef _WIN32
 #include <wx/aboutdlg.h>
+#endif
 #include <wx/busyinfo.h>
 
+#ifdef _WIN32
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
+#else
 #include "cv.h"
 #include "highgui.h"
+#endif
+
 #include "config.h"
 
 class MainFrame: public wxFrame {
