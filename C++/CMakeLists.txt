@@ -22,6 +22,10 @@ add_executable(ContactAngle main.cpp MainFrame.h MainFrame.cpp fit.h fit.cpp)
 target_link_libraries(ContactAngle ${wxWidgets_LIBRARIES} ${OpenCV_LIBS})
 install(TARGETS ContactAngle DESTINATION bin)
 
+FILE(GLOB dlls "${OpenCV_DIR}/bin/*.dll")
+install(FILES ${dlls} DESTINATION bin)
+include(InstallRequiredSystemLibraries)
+
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ContactAngle")
 set(CPACK_PACKAGE_VENDOR "Daniel Gruber <daniel@tydirium.org>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Readme.txt")
@@ -30,10 +34,5 @@ set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_EXECUTABLES "ContactAngle" "ContactAngle")
-
-if(UNIX)
-  SET(CPACK_GENERATOR "DEB")
-  SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Daniel Gruber") #required
-endif(UNIX)
 
 include(CPack)
