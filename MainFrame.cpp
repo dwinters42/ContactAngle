@@ -24,7 +24,8 @@
 
 #define PI 3.14159265
 
-MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
+MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
+		     const wxPoint& pos, const wxSize& size, long style):
   wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
   SetTitle(wxT("ContactAngle"));
@@ -139,6 +140,8 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, const wxPo
   // defaults
   threshold = 110;
   tilt=0.0;
+
+  // load input file if command line argument is present
 }
 
 

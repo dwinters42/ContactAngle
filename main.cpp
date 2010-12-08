@@ -16,20 +16,45 @@
 
 #include <wx/wx.h>
 #include <wx/image.h>
+#include <wx/cmdline.h>
+#include <iostream>
+
 #include "MainFrame.h"
 
 class ContactAngleApp: public wxApp {
+
 public:
   bool OnInit();
+private:
+  bool loadFile, verbose;
+  wxString infile;
 };
 
 IMPLEMENT_APP(ContactAngleApp)
 
 bool ContactAngleApp::OnInit()
 {
+  /* parse the command line */
+  wxCmdLineEntryDesc desc[] =   {
+    {wxCMD_LINE_SWITCH, wxT("h"), wxT("help"), wxT("Show this help message"),
+     wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+    {wxCMD_LINE_SWITCH, wxT("v"), wxT("verbose"), wxT("Verbose output")},
+    {wxCMD_LINE_OPTION, wxT("f"), wxT("file"), wxT("Input file to process"),
+     wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY},
+    {wxCMD_LINE_NONE}
+  };
+  wxCmdLineParser parser (desc, argc, argv);
+  if (parser.Parse() !=0)
+    return false;
+
+  verbose = parser.Found(wxT("v"));
+  loadFile = parser.Found(wxT("f"),&infile);
+
+  /* display main frame and run main loop */
   wxInitAllImageHandlers();
   MainFrame* frame = new MainFrame(NULL, wxID_ANY, wxEmptyString);
   SetTopWindow(frame);
   frame->Show();
   return true;
 }
+
