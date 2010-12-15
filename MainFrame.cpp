@@ -18,6 +18,7 @@
 #include <cstdio>
 
 #include <wx/file.h>
+#include <wx/utils.h>
 
 #include "MainFrame.h"
 #include "fit.h"
@@ -140,10 +141,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
   // defaults
   threshold = 110;
   tilt=0.0;
-
-  // load input file if command line argument is present
 }
-
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN, MainFrame::loadFile)
@@ -153,7 +151,6 @@ EVT_MENU(ID_processAll, MainFrame::processAll)
 EVT_SCROLL(MainFrame::process)
 END_EVENT_TABLE();
 
-
 void MainFrame::loadFile(wxCommandEvent &event)
 {
   wxFileDialog *dlg = new wxFileDialog(this, wxT("Choose a video file"), \
@@ -161,44 +158,53 @@ void MainFrame::loadFile(wxCommandEvent &event)
 				       wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_CHANGE_DIR);
   if (dlg->ShowModal() == wxID_OK) {
     filename=dlg->GetPath();
-
-    wxWindowDisabler disabler;
-    wxBusyInfo busy(wxT("loading data, please wait ..."));
-
-    cap.open(std::string(filename.mb_str()));
-    if(!cap.isOpened())
-      wxMessageBox(wxT("Could not open file!"), wxT("Error"), wxICON_ERROR);
-    else {
-      SetTitle(wxT("ContactAngle: ")+filename);
-      statusbar->SetStatusText(wxT("Loaded ")+filename);
-
-      fileokay=true;
-      fwidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
-      fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
-      numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
-
-      sliderFramenum->SetRange(1, numframes);
-      sliderThres->SetValue(threshold);
-      sliderFitpoints->SetRange(1,fheight);
-
-      sliderFramenum->SetValue(1);
-
-      int defaultfitpoints = 80;
-      if (defaultfitpoints>fheight)
-	defaultfitpoints=fheight;
-      sliderFitpoints->SetValue(defaultfitpoints);
-
-      sliderLeft->SetRange(0,fheight-1);
-      sliderLeft->SetValue(fheight/2);
-      sliderRight->SetRange(0,fheight-1);
-      sliderRight->SetValue(fheight/2);
-
-      dataloaded=true;
-
-      wxScrollEvent dummy;
-      process(dummy);
-    }
+    _loadFile(filename);
   }
+}
+
+int MainFrame::_loadFile(wxString fn)
+{
+
+  filename = fn;
+  wxWindowDisabler disabler;
+  wxBusyInfo busy(wxT("loading data, please wait ..."));
+
+  cap.open(std::string(filename.mb_str()));
+  if(!cap.isOpened()) {
+    wxMessageBox(wxT("Could not open file!"), wxT("Error"), wxICON_ERROR);
+    return -1;
+  }
+
+  SetTitle(wxT("ContactAngle: ")+filename);
+  statusbar->SetStatusText(wxT("Loaded ")+filename);
+  
+  fileokay=true;
+  fwidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
+  fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+  numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
+
+  sliderFramenum->SetRange(1, numframes);
+  sliderThres->SetValue(threshold);
+  sliderFitpoints->SetRange(1,fheight);
+  
+  sliderFramenum->SetValue(1);
+  
+  int defaultfitpoints = 80;
+  if (defaultfitpoints>fheight)
+    defaultfitpoints=fheight;
+  sliderFitpoints->SetValue(defaultfitpoints);
+  
+  sliderLeft->SetRange(0,fheight-1);
+  sliderLeft->SetValue(fheight/2);
+  sliderRight->SetRange(0,fheight-1);
+  sliderRight->SetValue(fheight/2);
+      
+  dataloaded=true;
+  
+  wxScrollEvent dummy;
+  process(dummy);
+
+  return 0;
 }
 
 void MainFrame::onExit(wxCommandEvent &event)

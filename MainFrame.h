@@ -88,6 +88,7 @@ class MainFrame: public wxFrame {
   virtual void onAbout(wxCommandEvent &event);
   virtual void processAll(wxCommandEvent &event);
   virtual void process(wxScrollEvent &event);
+  int _loadFile(wxString filename);
 };
 
 #endif // MAINFRAME_H
