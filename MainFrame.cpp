@@ -55,6 +55,10 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
 		   wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxT("Load video or image"),\
 		   wxEmptyString);
+  toolbar->AddTool(ID_dedup, wxT("Dedup"),				\
+		   wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_TOOLBAR),\
+		   wxNullBitmap, wxITEM_NORMAL, wxT("Find non-duplicate frames"),\
+		   wxEmptyString);
   toolbar->AddTool(ID_processAll, wxT("Analyze Movie"),\
 		   wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
@@ -147,6 +151,7 @@ BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN, MainFrame::loadFile)
 EVT_MENU(wxID_EXIT, MainFrame::onExit)
 EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
+EVT_MENU(ID_dedup, MainFrame::onDedup)
 EVT_MENU(ID_processAll, MainFrame::processAll)
 EVT_SCROLL(MainFrame::process)
 END_EVENT_TABLE();
@@ -203,6 +208,27 @@ int MainFrame::_loadFile(wxString fn)
   
   wxScrollEvent dummy;
   process(dummy);
+
+  return 0;
+}
+
+
+void MainFrame::onDedup(wxCommandEvent &event)
+{
+  if (!dataloaded) {
+    wxMessageBox(wxT("No data loaded!"), wxT("Error"), wxOK);
+    return;
+  }
+  
+  _dedup();
+}
+
+int MainFrame::_dedup()
+{
+  if (!dataloaded)
+    return -1;
+
+  
 
   return 0;
 }

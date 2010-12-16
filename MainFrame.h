@@ -21,10 +21,12 @@
 #include <wx/image.h>
 #include <wx/statline.h>
 #include <wx/artprov.h>
+#include <wx/dynarray.h>
+#include <wx/busyinfo.h>
+
 #ifndef _WIN32
 #include <wx/aboutdlg.h>
 #endif
-#include <wx/busyinfo.h>
 
 #ifdef _WIN32
 #include "opencv/cv.h"
@@ -56,9 +58,11 @@ class MainFrame: public wxFrame {
   double al, ar;
 
   bool dataloaded;
+  bool deduped;
+  //  WXDEFINE_ARRAY_INT(int, framesToConsider);  
 
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
-	ID_sliderRight, ID_processAll};
+	ID_sliderRight, ID_processAll, ID_dedup};
 
  protected:
   wxPanel* panel;
@@ -86,9 +90,11 @@ class MainFrame: public wxFrame {
   virtual void loadFile(wxCommandEvent &event);
   virtual void onExit(wxCommandEvent &event);
   virtual void onAbout(wxCommandEvent &event);
+  virtual void onDedup(wxCommandEvent &event);
   virtual void processAll(wxCommandEvent &event);
   virtual void process(wxScrollEvent &event);
   int _loadFile(wxString filename);
+  int _dedup(void);
 };
 
 #endif // MAINFRAME_H
