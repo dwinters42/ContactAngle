@@ -19,6 +19,7 @@
 
 #include <wx/file.h>
 #include <wx/utils.h>
+#include <wx/progdlg.h>
 
 #include "MainFrame.h"
 #include "fit.h"
@@ -221,6 +222,10 @@ void MainFrame::onDedup(wxCommandEvent &event)
   }
   
   _dedup();
+
+  sliderFramenum->SetValue(1);
+  wxScrollEvent dummy;
+  process(dummy);
 }
 
 int MainFrame::_dedup()
@@ -228,7 +233,19 @@ int MainFrame::_dedup()
   if (!dataloaded)
     return -1;
 
-  
+  int i;
+  cv::Mat frame;
+  cv::Mat difframe(fheight,fwidth,CV_8UC1);
+  cv::Mat nextframe(fheight,fwidth,CV_8UC1);
+
+  wxProgressDialog *dlg = \
+    new wxProgressDialog(wxT("Finding duplicate images"),		\
+			 wxT("looking fopr duplicates in movie ..."),	\
+			 numframes-1, this, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+
+  for (i=0;i<numframes;i++) {
+    dlg->Update(i);
+  }
 
   return 0;
 }
