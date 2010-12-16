@@ -14,12 +14,15 @@
 // TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include "config.h"
+
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/cmdline.h>
 #include <iostream>
 
 #include "MainFrame.h"
+
 
 class ContactAngleApp: public wxApp {
 

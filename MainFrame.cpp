@@ -20,6 +20,8 @@
 #include <wx/file.h>
 #include <wx/utils.h>
 #include <wx/progdlg.h>
+#include <wx/log.h>
+#include <wx/debug.h>
 
 #include "MainFrame.h"
 #include "fit.h"
@@ -142,6 +144,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
   Layout();
 
   dataloaded = false;
+  framesToAnalyze.Clear();
 
   // defaults
   threshold = 110;
@@ -177,23 +180,24 @@ int MainFrame::_loadFile(wxString fn)
 
   cap.open(std::string(filename.mb_str()));
   if(!cap.isOpened()) {
-    wxMessageBox(wxT("Could not open file!"), wxT("Error"), wxICON_ERROR);
+    wxLogError(wxT("Could not open file!"));
     return -1;
   }
 
   SetTitle(wxT("ContactAngle: ")+filename);
-  statusbar->SetStatusText(wxT("Loaded ")+filename);
+  wxLogStatus(wxT("Loaded ")+filename);
   
-  fileokay=true;
   fwidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
   fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
   numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
 
+  wxLogDebug(wxT("%s: %ix%i, %i frames"),filename.c_str(),fwidth,fheight,numframes);
+
   sliderFramenum->SetRange(1, numframes);
+  sliderFramenum->SetValue(1);
+
   sliderThres->SetValue(threshold);
   sliderFitpoints->SetRange(1,fheight);
-  
-  sliderFramenum->SetValue(1);
   
   int defaultfitpoints = 80;
   if (defaultfitpoints>fheight)
@@ -206,6 +210,8 @@ int MainFrame::_loadFile(wxString fn)
   sliderRight->SetValue(fheight/2);
       
   dataloaded=true;
+  deduped=false;
+  framesToAnalyze.Clear();
   
   wxScrollEvent dummy;
   process(dummy);
@@ -217,36 +223,59 @@ int MainFrame::_loadFile(wxString fn)
 void MainFrame::onDedup(wxCommandEvent &event)
 {
   if (!dataloaded) {
-    wxMessageBox(wxT("No data loaded!"), wxT("Error"), wxOK);
+    wxLogError(wxT("No data loaded!"));
     return;
   }
   
   _dedup();
+ 
 
-  sliderFramenum->SetValue(1);
   wxScrollEvent dummy;
   process(dummy);
 }
 
 int MainFrame::_dedup()
 {
-  if (!dataloaded)
-    return -1;
-
   int i;
-  cv::Mat frame;
+  cv::Mat temp;
+  cv::Mat oldframe(fheight,fwidth,CV_8UC1);
   cv::Mat difframe(fheight,fwidth,CV_8UC1);
   cv::Mat nextframe(fheight,fwidth,CV_8UC1);
 
   wxProgressDialog *dlg = \
     new wxProgressDialog(wxT("Finding duplicate images"),		\
-			 wxT("looking fopr duplicates in movie ..."),	\
+			 wxT("looking for duplicates in movie ..."),	\
 			 numframes-1, this, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
 
-  for (i=0;i<numframes;i++) {
+  framesToAnalyze.Clear();
+  wxLogDebug(wxT("numframes = %i"),numframes);
+
+  /* grab a first frame */
+  cap.set(CV_CAP_PROP_POS_FRAMES, 0);
+  cap >> temp;
+  cv::cvtColor(temp, oldframe, CV_BGR2GRAY);
+  framesToAnalyze.Add(0);
+
+  /* run through all frames */
+  for (i=1;i<numframes;i++) {
+    cap >> temp;
+    cv::cvtColor(temp, nextframe, CV_BGR2GRAY);
+    cv::compare(oldframe, nextframe, difframe, cv::CMP_NE);
+    if(cv::countNonZero(difframe) != 0) {
+      /* this is a new frame */
+      framesToAnalyze.Add(i);
+      oldframe = nextframe.clone();
+    }
     dlg->Update(i);
   }
 
+  wxLogStatus(wxT("Found %i unique frames, using only these"),framesToAnalyze.GetCount());
+
+  deduped = true;
+  numframes=framesToAnalyze.GetCount();
+  sliderFramenum->SetValue(1);
+  sliderFramenum->SetRange(1, numframes);
+ 
   return 0;
 }
 
@@ -272,7 +301,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   wxScrollEvent dummy;
 
   if (!dataloaded) {
-    wxMessageBox(wxT("No data loaded!"), wxT("Error"), wxOK);
+    wxLogError(wxT("No data loaded!"));
     return;
   }
 
@@ -311,272 +340,272 @@ void MainFrame::processAll(wxCommandEvent &event) {
   sliderFramenum->SetValue(1);
   process(dummy);
 
-  str=wxT("Successfully wrote output file ") + outfilename + wxT(".");
-  statusbar->SetStatusText(str);
-  wxMessageBox(str, wxT("Success"),wxOK);
-
+  wxLogMessage(wxT("Successfully wrote output file ") + outfilename + wxT("."));
 }
 
 
 void MainFrame::process(wxScrollEvent &event) {
 
-  if (dataloaded) {
-    cv::Mat frame;
-    int bl, br;
+  if (!dataloaded)
+    return;
 
+  cv::Mat frame;
+  int bl, br;
+
+  if (deduped)
+    cap.set(CV_CAP_PROP_POS_FRAMES, framesToAnalyze.Item(sliderFramenum->GetValue()-1));
+  else
     cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue()-1);
-    cap >> frame;
-
-    cv::Mat edges(fheight,fwidth,CV_8UC1);
-    cv::cvtColor(frame, edges, CV_BGR2GRAY);
-    cv::equalizeHist(edges, edges);
-    cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
-    
-    if (tilt != 0.0) {
-      cv::Mat temp(fheight, fwidth, CV_8UC1);
-      cv::Mat rot_mat(2,3,CV_32FC1);
-      rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
-      cv::warpAffine(edges, temp, rot_mat, edges.size());
-      edges=temp;
-      bl=baseleft;
-      br=baseleft;
-    }
-    else {
-      bl=baseleft;
-      br=baseright;
-    }
-
-    cv::cvtColor(edges, frame, CV_GRAY2BGR);
-    
-    int numofpoints=sliderFitpoints->GetValue();
-    int baseleft=sliderLeft->GetValue();
-    int baseright=sliderRight->GetValue();
-
-    int i, row, col;
-
-    double *yvals = new double[numofpoints];
-    for (i=0;i<numofpoints;i++)
-      yvals[i]=i;
-
-    double *dataleft = new double[numofpoints];
-    double *dataright = new double[numofpoints];
-
-    double min, max;
-
-    // #### left contact angle ###
-
-    // first, find the data points
-    for (row=0; row<numofpoints; row++) {
-      const uchar* Mi = edges.ptr<uchar>(baseleft-numofpoints+row);
-      for (col=50; col<edges.cols-50; col++) {
-	if (Mi[col] == 0) {
-	  dataleft[numofpoints-row-1]=col;
-
-	  // plot a dot in the image window
-	  cv::circle(frame, cv::Point(col,baseleft-numofpoints+row),	\
-		     1, CV_RGB(0,0,255));
-	  break;
-	}
-      }
-    }
-
-    min=1e30;
-    max=1e-30;
-
-    for(i=0;i<numofpoints;i++) {
-      min=MIN(min, dataleft[i]);
-      max=MAX(max, dataleft[i]);
-    }
-
-    int width, height;
-    fitwindowleft->GetClientSize(&width,&height);
-
-    wxMemoryDC memDC;
-    wxBitmap bmleft(width,height);
-
-    memDC.SelectObject(bmleft);
-    memDC.SetBackground(*wxWHITE_BRUSH);
-    memDC.Clear();
-    memDC.SetPen(*wxBLACK);
-    memDC.SetBrush(*wxBLUE_BRUSH);
-
-    double xstep=width/(max-min);
-    double ystep=height/numofpoints;
-    int xpos,ypos;
-
-    // draw data points
-    for (i=0;i<numofpoints;i++) {
-      xpos=(dataleft[i]-min)*xstep;
-      ypos=height-yvals[i]*ystep;
-      memDC.DrawCircle(xpos,ypos,4);
-    }      
-
-    // make a parabolic fit on the points, see fit.[cpp,h]
-    double *p = new double[3];
-    double *x = new double[numofpoints];
-    double offsetleft, offsetright;
-
-    offsetleft=dataleft[0];
-    for (i=0;i<numofpoints;i++) {
-      x[i]=i;
-      dataleft[i]=dataleft[i]-offsetleft;
-    }
-    polyfit(p,x,dataleft,2,numofpoints);
-
-    // plot fitted line
-    memDC.SetPen(*wxRED);
-    memDC.SetBrush(*wxRED_BRUSH);
-
-    double *fitdata = new double[numofpoints];
-    fitdata[0]=p[2]+offsetleft;
-    for (i=1;i<numofpoints;i++) {
-      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetleft;
-
-      memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
-		     (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
-    }
-    memDC.SelectObject(wxNullBitmap);
-    fitwindowleft->SetBitmap(bmleft);
-
-    // calculate contact angle
-    if (p[1]<0)
-      al=180-(atan(-1/p[1])*180/PI);
-    else
-      al=atan(1/p[1])*180/PI;
-
-    // ### right contact angle ### 
-
-    // right data points
-    for (row=0; row<numofpoints; row++) {
-      const uchar* Mi = edges.ptr<uchar>(baseright-numofpoints+row);
-      for (col=edges.cols-50; col>50; col--) {
-	if (Mi[col] == 0) {
-	  dataright[numofpoints-row-1]=col;
-	  cv::circle(frame, cv::Point(col,baseright-numofpoints+row),	\
-		     1, CV_RGB(0,0,255));
-	  break;
-	}
-      }
-    }
-
-    min=1e30;
-    max=1e-30;
-
-    for(i=0;i<numofpoints;i++) {
-      min=MIN(min, dataright[i]);
-      max=MAX(max, dataright[i]);
-    }
-
-    fitwindowright->GetClientSize(&width,&height);
-
-    wxBitmap bmright(width,height);
-
-    memDC.SelectObject(bmright);
-    memDC.SetBackground(*wxWHITE_BRUSH);
-    memDC.Clear();
-    memDC.SetPen(*wxBLACK);
-    memDC.SetBrush(*wxBLUE_BRUSH);
-
-    xstep=width/(max-min);
-    ystep=height/numofpoints;
-
-    // draw data points
-    for (i=0;i<numofpoints;i++) {
-      xpos=(dataright[i]-min)*xstep;
-      ypos=height-yvals[i]*ystep;
-      memDC.DrawCircle(xpos,ypos,4);
-    }      
-
-    // make a parabolic fit on the points, see fit.[cpp,h]
-    offsetright=dataright[0];
-    for (i=0;i<numofpoints;i++) {
-      x[i]=i;
-      dataright[i]=dataright[i]-offsetright;
-    }
-    polyfit(p,x,dataright,2,numofpoints);
-
-    // plot fitted line
-    memDC.SetPen(*wxRED);
-    memDC.SetBrush(*wxRED_BRUSH);
-
-    fitdata[0]=p[2]+offsetright;
-    for (i=1;i<numofpoints;i++) {
-      fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetright;
-
-      memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
-		     (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
-    }
-    memDC.SelectObject(wxNullBitmap);
-    fitwindowright->SetBitmap(bmright);
-
-    // calculate contact angle
-    if (p[1]>0)
-      ar=180-(atan(1/p[1])*180/PI);
-    else
-      ar=atan(-1/p[1])*180/PI;
-
-    // cleanup
-    delete[] dataleft;
-    delete[] dataright;
-
-    // ### plot lines showing the contact angles
-
-    cv::Point2i basepointleft(offsetleft, baseleft);
-    cv::Point2i basepointright(offsetright, baseright);
-    cv::Point2i endpoint;
-
-    cv::line(frame,basepointleft,basepointright,CV_RGB(255,255,0));
-
-    // draw lines showing the contact angles
-    if (al>90.0) {
-      endpoint.x=basepointleft.x-100;
-      endpoint.y=basepointleft.y-100*tan((180-al)/180*PI);
-      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
-    }
-    else if (al<90.0) {
-      endpoint.x=basepointleft.x+100;
-      endpoint.y=basepointleft.y-100*tan((al)/180*PI);
-      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
-    }
-    else {
-      endpoint.x=basepointleft.x;
-      endpoint.y=basepointleft.y+50;
-      cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
-    }
-
-    if (ar>90.0) {
-      endpoint.x=basepointright.x+100;
-      endpoint.y=basepointright.y-100*tan((180-ar)/180*PI);
-      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
-    }
-    else if (ar<90.0) {
-      endpoint.x=basepointright.x-100;
-      endpoint.y=basepointright.y-100*tan((ar)/180*PI);
-      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
-    }
-    else {
-      endpoint.x=basepointright.x;
-      endpoint.y=basepointright.y+50;
-      cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
-    }
-
-    // finally, also print the contact angle as a number
-    char posstring[7];
-    sprintf(posstring,"%.2f", al);
-    cv::Point labelposleft(basepointleft.x-70, basepointleft.y);
-    cv::putText(frame, posstring, labelposleft, \
-		cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
-    sprintf(posstring,"%.2f", ar);
-    cv::Point labelposright(basepointright.x+15, basepointright.y);
-    cv::putText(frame, posstring, labelposright, \
-		cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
-
-    // show the droplet image
-    wxImage plot(fwidth, fheight, (uchar*) frame.data, true);
-    wxBitmap bm(plot);
-    
-    plotwindow->SetClientSize(fwidth,fheight);
-    plotwindow->SetBitmap(bm);
+  cap >> frame;
+  
+  cv::Mat edges(fheight,fwidth,CV_8UC1);
+  cv::cvtColor(frame, edges, CV_BGR2GRAY);
+  cv::equalizeHist(edges, edges);
+  cv::threshold(edges, edges, sliderThres->GetValue(), 255, CV_THRESH_BINARY);
+  
+  if (tilt != 0.0) {
+    cv::Mat temp(fheight, fwidth, CV_8UC1);
+    cv::Mat rot_mat(2,3,CV_32FC1);
+    rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
+    cv::warpAffine(edges, temp, rot_mat, edges.size());
+    edges=temp;
+    bl=baseleft;
+    br=baseleft;
   }
-}
+  else {
+    bl=baseleft;
+    br=baseright;
+  }
+  
+  cv::cvtColor(edges, frame, CV_GRAY2BGR);
+  
+  int numofpoints=sliderFitpoints->GetValue();
+  int baseleft=sliderLeft->GetValue();
+  int baseright=sliderRight->GetValue();
 
+  int i, row, col;
+
+  double *yvals = new double[numofpoints];
+  for (i=0;i<numofpoints;i++)
+    yvals[i]=i;
+
+  double *dataleft = new double[numofpoints];
+  double *dataright = new double[numofpoints];
+
+  double min, max;
+
+  // #### left contact angle ###
+
+  // first, find the data points
+  for (row=0; row<numofpoints; row++) {
+    const uchar* Mi = edges.ptr<uchar>(baseleft-numofpoints+row);
+    for (col=50; col<edges.cols-50; col++) {
+      if (Mi[col] == 0) {
+	dataleft[numofpoints-row-1]=col;
+
+	// plot a dot in the image window
+	cv::circle(frame, cv::Point(col,baseleft-numofpoints+row),	\
+		   1, CV_RGB(0,0,255));
+	break;
+      }
+    }
+  }
+
+  min=1e30;
+  max=1e-30;
+
+  for(i=0;i<numofpoints;i++) {
+    min=MIN(min, dataleft[i]);
+    max=MAX(max, dataleft[i]);
+  }
+
+  int width, height;
+  fitwindowleft->GetClientSize(&width,&height);
+
+  wxMemoryDC memDC;
+  wxBitmap bmleft(width,height);
+
+  memDC.SelectObject(bmleft);
+  memDC.SetBackground(*wxWHITE_BRUSH);
+  memDC.Clear();
+  memDC.SetPen(*wxBLACK);
+  memDC.SetBrush(*wxBLUE_BRUSH);
+
+  double xstep=width/(max-min);
+  double ystep=height/numofpoints;
+  int xpos,ypos;
+
+  // draw data points
+  for (i=0;i<numofpoints;i++) {
+    xpos=(dataleft[i]-min)*xstep;
+    ypos=height-yvals[i]*ystep;
+    memDC.DrawCircle(xpos,ypos,4);
+  }      
+
+  // make a parabolic fit on the points, see fit.[cpp,h]
+  double *p = new double[3];
+  double *x = new double[numofpoints];
+  double offsetleft, offsetright;
+
+  offsetleft=dataleft[0];
+  for (i=0;i<numofpoints;i++) {
+    x[i]=i;
+    dataleft[i]=dataleft[i]-offsetleft;
+  }
+  polyfit(p,x,dataleft,2,numofpoints);
+
+  // plot fitted line
+  memDC.SetPen(*wxRED);
+  memDC.SetBrush(*wxRED_BRUSH);
+
+  double *fitdata = new double[numofpoints];
+  fitdata[0]=p[2]+offsetleft;
+  for (i=1;i<numofpoints;i++) {
+    fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetleft;
+
+    memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
+		   (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
+  }
+  memDC.SelectObject(wxNullBitmap);
+  fitwindowleft->SetBitmap(bmleft);
+
+  // calculate contact angle
+  if (p[1]<0)
+    al=180-(atan(-1/p[1])*180/PI);
+  else
+    al=atan(1/p[1])*180/PI;
+
+  // ### right contact angle ### 
+
+  // right data points
+  for (row=0; row<numofpoints; row++) {
+    const uchar* Mi = edges.ptr<uchar>(baseright-numofpoints+row);
+    for (col=edges.cols-50; col>50; col--) {
+      if (Mi[col] == 0) {
+	dataright[numofpoints-row-1]=col;
+	cv::circle(frame, cv::Point(col,baseright-numofpoints+row),	\
+		   1, CV_RGB(0,0,255));
+	break;
+      }
+    }
+  }
+
+  min=1e30;
+  max=1e-30;
+
+  for(i=0;i<numofpoints;i++) {
+    min=MIN(min, dataright[i]);
+    max=MAX(max, dataright[i]);
+  }
+
+  fitwindowright->GetClientSize(&width,&height);
+
+  wxBitmap bmright(width,height);
+
+  memDC.SelectObject(bmright);
+  memDC.SetBackground(*wxWHITE_BRUSH);
+  memDC.Clear();
+  memDC.SetPen(*wxBLACK);
+  memDC.SetBrush(*wxBLUE_BRUSH);
+
+  xstep=width/(max-min);
+  ystep=height/numofpoints;
+
+  // draw data points
+  for (i=0;i<numofpoints;i++) {
+    xpos=(dataright[i]-min)*xstep;
+    ypos=height-yvals[i]*ystep;
+    memDC.DrawCircle(xpos,ypos,4);
+  }      
+
+  // make a parabolic fit on the points, see fit.[cpp,h]
+  offsetright=dataright[0];
+  for (i=0;i<numofpoints;i++) {
+    x[i]=i;
+    dataright[i]=dataright[i]-offsetright;
+  }
+  polyfit(p,x,dataright,2,numofpoints);
+
+  // plot fitted line
+  memDC.SetPen(*wxRED);
+  memDC.SetBrush(*wxRED_BRUSH);
+
+  fitdata[0]=p[2]+offsetright;
+  for (i=1;i<numofpoints;i++) {
+    fitdata[i]=p[0]*x[i]*x[i]+p[1]*x[i]+p[2]+offsetright;
+
+    memDC.DrawLine((fitdata[i]-min)*xstep,height-yvals[i]*ystep,\
+		   (fitdata[i-1]-min)*xstep,height-yvals[i-1]*ystep);
+  }
+  memDC.SelectObject(wxNullBitmap);
+  fitwindowright->SetBitmap(bmright);
+
+  // calculate contact angle
+  if (p[1]>0)
+    ar=180-(atan(1/p[1])*180/PI);
+  else
+    ar=atan(-1/p[1])*180/PI;
+
+  // cleanup
+  delete[] dataleft;
+  delete[] dataright;
+
+  // ### plot lines showing the contact angles
+
+  cv::Point2i basepointleft(offsetleft, baseleft);
+  cv::Point2i basepointright(offsetright, baseright);
+  cv::Point2i endpoint;
+
+  cv::line(frame,basepointleft,basepointright,CV_RGB(255,255,0));
+
+  // draw lines showing the contact angles
+  if (al>90.0) {
+    endpoint.x=basepointleft.x-100;
+    endpoint.y=basepointleft.y-100*tan((180-al)/180*PI);
+    cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+  }
+  else if (al<90.0) {
+    endpoint.x=basepointleft.x+100;
+    endpoint.y=basepointleft.y-100*tan((al)/180*PI);
+    cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+  }
+  else {
+    endpoint.x=basepointleft.x;
+    endpoint.y=basepointleft.y+50;
+    cv::line(frame, basepointleft, endpoint, CV_RGB(0,255,0));
+  }
+
+  if (ar>90.0) {
+    endpoint.x=basepointright.x+100;
+    endpoint.y=basepointright.y-100*tan((180-ar)/180*PI);
+    cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+  }
+  else if (ar<90.0) {
+    endpoint.x=basepointright.x-100;
+    endpoint.y=basepointright.y-100*tan((ar)/180*PI);
+    cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+  }
+  else {
+    endpoint.x=basepointright.x;
+    endpoint.y=basepointright.y+50;
+    cv::line(frame, basepointright, endpoint, CV_RGB(0,255,0));
+  }
+
+  // finally, also print the contact angle as a number
+  char posstring[7];
+  sprintf(posstring,"%.2f", al);
+  cv::Point labelposleft(basepointleft.x-70, basepointleft.y);
+  cv::putText(frame, posstring, labelposleft, \
+	      cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
+  sprintf(posstring,"%.2f", ar);
+  cv::Point labelposright(basepointright.x+15, basepointright.y);
+  cv::putText(frame, posstring, labelposright, \
+	      cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0));
+
+  // show the droplet image
+  wxImage plot(fwidth, fheight, (uchar*) frame.data, true);
+  wxBitmap bm(plot);
+    
+  plotwindow->SetClientSize(fwidth,fheight);
+  plotwindow->SetBitmap(bm);
+}

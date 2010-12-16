@@ -17,6 +17,8 @@
 #ifndef MAINFRAME_H
 #define MAINFRAME_H
 
+#include "config.h"
+
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/statline.h>
@@ -36,8 +38,6 @@
 #include "highgui.h"
 #endif
 
-#include "config.h"
-
 class MainFrame: public wxFrame {
  public:
   MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
@@ -45,7 +45,6 @@ class MainFrame: public wxFrame {
  private:
   wxString filename;
   cv::VideoCapture cap;
-  bool fileokay;
   int threshold;
   int framenum;
   int baseleft;
@@ -59,7 +58,7 @@ class MainFrame: public wxFrame {
 
   bool dataloaded;
   bool deduped;
-  //  WXDEFINE_ARRAY_INT(int, framesToConsider);  
+  wxArrayInt framesToAnalyze;
 
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
 	ID_sliderRight, ID_processAll, ID_dedup};
