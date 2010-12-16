@@ -15,6 +15,7 @@ find_package(wxWidgets REQUIRED)
 FIND_PACKAGE(OpenCV REQUIRED)
 
 include(${wxWidgets_USE_FILE})
+set(wxWidgets_USE_DEBUG ON)
 
 include_directories(${ContactAngle_SOURCE_DIR} ${wxWidgets_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
