@@ -19,6 +19,10 @@
 
 #include "config.h"
 
+// For compilers that support precompilation, includes "wx.h".
+#include <wx/wxprec.h>
+
+#ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/statline.h>
@@ -26,6 +30,7 @@
 #include <wx/dynarray.h>
 #include <wx/busyinfo.h>
 #include <wx/filename.h>
+#endif
 
 #ifndef _WIN32
 #include <wx/aboutdlg.h>

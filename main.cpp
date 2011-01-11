@@ -16,13 +16,17 @@
 
 #include "config.h"
 
+// For compilers that support precompilation, includes "wx.h".
+#include <wx/wxprec.h>
+
+#ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/cmdline.h>
+#endif
+
 #include <iostream>
-
 #include "MainFrame.h"
-
 
 class ContactAngleApp: public wxApp {
 
