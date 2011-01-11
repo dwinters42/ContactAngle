@@ -171,27 +171,27 @@ void MainFrame::loadFile(wxCommandEvent &event)
   }
 }
 
-int MainFrame::_loadFile(wxString fn)
+int MainFrame::_loadFile(wxFileName fn)
 {
 
   filename = fn;
   wxWindowDisabler disabler;
   wxBusyInfo busy(wxT("loading data, please wait ..."));
 
-  cap.open(std::string(filename.mb_str()));
+  cap.open(std::string(filename.GetFullPath().mb_str()));
   if(!cap.isOpened()) {
     wxLogError(wxT("Could not open file!"));
     return -1;
   }
 
-  SetTitle(wxT("ContactAngle: ")+filename);
-  wxLogStatus(wxT("Loaded ")+filename);
+  SetTitle(wxT("ContactAngle: ")+filename.GetFullName());
+  wxLogStatus(wxT("Loaded ")+filename.GetFullName());
   
   fwidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
   fheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
   numframes=cap.get(CV_CAP_PROP_FRAME_COUNT);
 
-  wxLogDebug(wxT("%s: %ix%i, %i frames"),filename.c_str(),fwidth,fheight,numframes);
+  wxLogDebug(wxT("%s: %ix%i, %i frames"),filename.GetFullName().c_str(),fwidth,fheight,numframes);
 
   sliderFramenum->SetRange(1, numframes);
   sliderFramenum->SetValue(1);
@@ -305,18 +305,19 @@ void MainFrame::processAll(wxCommandEvent &event) {
     return;
   }
 
-  wxString outfilename = filename + wxT(".txt");
+  wxFileName outfilename = filename;
+  outfilename.SetExt(wxT("txt"));
   
-  if (wxFile::Exists(outfilename)) {
-    if (wxMessageBox(wxT("File exists, overwrite?"), wxT("Confirm"),wxYES_NO)==wxNO)
+  if (outfilename.FileExists()) {
+    if (wxMessageBox(wxT("Output file exists, overwrite?"), wxT("Confirm"),wxYES_NO)==wxNO)
       return;
   }
   
-  wxFile outfile(outfilename,wxFile::write);
+  wxFile outfile(outfilename.GetFullPath(),wxFile::write);
   wxString str;
 
   // print file header
-  outfile.Write(wxT("# contact angle data for file ")+filename+wxT("\n"));
+  outfile.Write(wxT("# contact angle data for file ")+filename.GetFullName()+wxT("\n"));
   str.Printf(wxT("# thresh = %i\n"),sliderThres->GetValue());
   outfile.Write(str);
   str.Printf(wxT("# baseleft = %i\n"),sliderLeft->GetValue());
@@ -340,7 +341,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   sliderFramenum->SetValue(1);
   process(dummy);
 
-  wxLogMessage(wxT("Successfully wrote output file ") + outfilename + wxT("."));
+  wxLogMessage(wxT("Successfully wrote output file ") + outfilename.GetFullName() + wxT("."));
 }
 
 

@@ -25,6 +25,7 @@
 #include <wx/artprov.h>
 #include <wx/dynarray.h>
 #include <wx/busyinfo.h>
+#include <wx/filename.h>
 
 #ifndef _WIN32
 #include <wx/aboutdlg.h>
@@ -43,7 +44,7 @@ class MainFrame: public wxFrame {
   MainFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
 
  private:
-  wxString filename;
+  wxFileName filename;
   cv::VideoCapture cap;
   int threshold;
   int framenum;
@@ -92,7 +93,7 @@ class MainFrame: public wxFrame {
   virtual void onDedup(wxCommandEvent &event);
   virtual void processAll(wxCommandEvent &event);
   virtual void process(wxScrollEvent &event);
-  int _loadFile(wxString filename);
+  int _loadFile(wxFileName filename);
   int _dedup(void);
 };
 
