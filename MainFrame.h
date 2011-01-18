@@ -97,9 +97,11 @@ class MainFrame: public wxFrame {
   virtual void onAbout(wxCommandEvent &event);
   virtual void onDedup(wxCommandEvent &event);
   virtual void processAll(wxCommandEvent &event);
-  virtual void process(wxScrollEvent &event);
+  virtual void onScroll(wxScrollEvent &event);
+  virtual void onSize(wxSizeEvent &event);
   int _loadFile(wxFileName filename);
   int _dedup(void);
+  int _process(void);
 };
 
 #endif // MAINFRAME_H

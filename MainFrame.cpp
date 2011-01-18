@@ -69,11 +69,11 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
 
   // plotting windows
   plotwindow = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
-  plotwindow->SetMinSize(wxSize(640,480));
+  plotwindow->SetMinSize(wxSize(320,240));
   fitwindowleft = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
-  fitwindowleft->SetMinSize(wxSize(200,480));
+  fitwindowleft->SetMinSize(wxSize(100,240));
   fitwindowright = new wxStaticBitmap(panel, wxID_ANY, wxNullBitmap);
-  fitwindowright->SetMinSize(wxSize(200,480));
+  fitwindowright->SetMinSize(wxSize(100,240));
 
   static_line_1 = new wxStaticLine(panel, wxID_ANY);
 
@@ -140,6 +140,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
   panel->SetSizer(MainSizer);
   MainMainsizer->Add(panel, 1, wxEXPAND, 5);
   SetSizer(MainMainsizer);
+  MainMainsizer->SetSizeHints(this);
   MainMainsizer->Fit(this);
   Layout();
 
@@ -157,7 +158,8 @@ EVT_MENU(wxID_EXIT, MainFrame::onExit)
 EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
 EVT_MENU(ID_dedup, MainFrame::onDedup)
 EVT_MENU(ID_processAll, MainFrame::processAll)
-EVT_SCROLL(MainFrame::process)
+EVT_SCROLL(MainFrame::onScroll)
+EVT_SIZE(MainFrame::onSize)
 END_EVENT_TABLE();
 
 void MainFrame::loadFile(wxCommandEvent &event)
@@ -213,8 +215,7 @@ int MainFrame::_loadFile(wxFileName fn)
   deduped=false;
   framesToAnalyze.Clear();
   
-  wxScrollEvent dummy;
-  process(dummy);
+  _process();
 
   return 0;
 }
@@ -228,10 +229,7 @@ void MainFrame::onDedup(wxCommandEvent &event)
   }
   
   _dedup();
- 
-
-  wxScrollEvent dummy;
-  process(dummy);
+  _process();
 }
 
 int MainFrame::_dedup()
@@ -298,7 +296,6 @@ void MainFrame::onAbout(wxCommandEvent &event)
 
 void MainFrame::processAll(wxCommandEvent &event) {
   int i;
-  wxScrollEvent dummy;
 
   if (!dataloaded) {
     wxLogError(wxT("No data loaded!"));
@@ -331,7 +328,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   wxBeginBusyCursor();
   for (i=1; i<=numframes; i++) {
     sliderFramenum->SetValue(i);
-    process(dummy);
+    _process();
     str.Printf(wxT("%i, %f, %f\n"),i,al,ar);
     outfile.Write(str);
     wxYield();
@@ -339,16 +336,24 @@ void MainFrame::processAll(wxCommandEvent &event) {
   wxEndBusyCursor();
 
   sliderFramenum->SetValue(1);
-  process(dummy);
+  _process();
 
   wxLogMessage(wxT("Successfully wrote output file ") + outfilename.GetFullName() + wxT("."));
 }
 
+void MainFrame::onScroll(wxScrollEvent &event) {
+  _process();
+}
 
-void MainFrame::process(wxScrollEvent &event) {
+void MainFrame::onSize(wxSizeEvent &event) {
+  Layout();
+  _process();
+}
+
+int MainFrame::_process() {
 
   if (!dataloaded)
-    return;
+    return -1;
 
   cv::Mat frame;
   int bl, br;
@@ -605,8 +610,13 @@ void MainFrame::process(wxScrollEvent &event) {
 
   // show the droplet image
   wxImage plot(fwidth, fheight, (uchar*) frame.data, true);
-  wxBitmap bm(plot);
+
+  int plotwindowwidth, plotwindowheight;
+  plotwindow->GetClientSize(&plotwindowwidth, &plotwindowheight);
+  wxBitmap bm(plot.Scale(plotwindowwidth, plotwindowheight));
     
-  plotwindow->SetClientSize(fwidth,fheight);
   plotwindow->SetBitmap(bm);
+  plotwindow->Refresh();
+
+  return 0;
 }
