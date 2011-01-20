@@ -338,7 +338,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   sliderFramenum->SetValue(1);
   _process();
 
-  wxLogMessage(wxT("Successfully wrote output file ") + outfilename.GetFullName() + wxT("."));
+  wxLogStatus(wxT("Successfully wrote output file ") + outfilename.GetFullName() + wxT("."));
 }
 
 void MainFrame::onScroll(wxScrollEvent &event) {
