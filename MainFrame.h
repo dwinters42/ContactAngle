@@ -21,15 +21,15 @@
 
 // For compilers that support precompilation, includes "wx.h".
 #include <wx/wxprec.h>
+#include <wx/busyinfo.h>
+#include <wx/artprov.h>
+#include <wx/statline.h>
+#include <wx/filename.h>
 
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/image.h>
-#include <wx/statline.h>
-#include <wx/artprov.h>
 #include <wx/dynarray.h>
-#include <wx/busyinfo.h>
-#include <wx/filename.h>
 #endif
 
 #ifndef _WIN32
@@ -65,7 +65,6 @@ class MainFrame: public wxFrame {
   bool dataloaded;
   bool deduped;
   wxArrayInt framesToAnalyze;
-
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
 	ID_sliderRight, ID_processAll, ID_dedup};
 

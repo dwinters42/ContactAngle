@@ -16,16 +16,14 @@
 
 #include "config.h"
 
-// For compilers that support precompilation, includes "wx.h".
 #include <wx/wxprec.h>
+#include <wx/cmdline.h>
 
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/image.h>
-#include <wx/cmdline.h>
 #endif
 
-#include <iostream>
 #include "MainFrame.h"
 
 class ContactAngleApp: public wxApp {
@@ -43,10 +41,10 @@ bool ContactAngleApp::OnInit()
 {
   /* parse the command line */
   wxCmdLineEntryDesc desc[] =   {
-    {wxCMD_LINE_SWITCH, wxT("h"), wxT("help"), wxT("Show this help message"),
+    {wxCMD_LINE_SWITCH, "h", "help", "Show this help message",
      wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
-    {wxCMD_LINE_SWITCH, wxT("v"), wxT("verbose"), wxT("Verbose output")},
-    {wxCMD_LINE_OPTION, wxT("f"), wxT("file"), wxT("Input file to process"),
+    {wxCMD_LINE_SWITCH, "v", "verbose", "Verbose output"},
+    {wxCMD_LINE_OPTION, "f", "file", "Input file to process",
      wxCMD_LINE_VAL_STRING},
     {wxCMD_LINE_NONE}
   };
