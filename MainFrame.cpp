@@ -145,6 +145,7 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
   Layout();
 
   dataloaded = false;
+  deduped = false;
   framesToAnalyze.Clear();
 
   // defaults
