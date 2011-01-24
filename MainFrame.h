@@ -17,9 +17,6 @@
 #ifndef MAINFRAME_H
 #define MAINFRAME_H
 
-#include "config.h"
-
-// For compilers that support precompilation, includes "wx.h".
 #include <wx/wxprec.h>
 #include <wx/busyinfo.h>
 #include <wx/artprov.h>
@@ -30,10 +27,6 @@
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/dynarray.h>
-#endif
-
-#ifndef _WIN32
-#include <wx/aboutdlg.h>
 #endif
 
 #ifdef _WIN32

@@ -17,8 +17,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define VERSION_MAJOR @ContactAngle_VERSION_MAJOR@
-#define VERSION_MINOR @ContactAngle_VERSION_MINOR@
+#define CA_VERSION_MAJOR @ContactAngle_VERSION_MAJOR@
+#define CA_VERSION_MINOR @ContactAngle_VERSION_MINOR@
 
 #endif /* CONFIG_H */
 

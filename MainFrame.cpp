@@ -22,9 +22,11 @@
 #include <wx/progdlg.h>
 #include <wx/log.h>
 #include <wx/debug.h>
+#include <wx/aboutdlg.h>
 
 #include "MainFrame.h"
 #include "fit.h"
+#include "config.h"
 
 #define PI 3.14159265
 
@@ -285,14 +287,15 @@ void MainFrame::onExit(wxCommandEvent &event)
 
 void MainFrame::onAbout(wxCommandEvent &event)
 {
-#ifndef _WIN32 
   wxAboutDialogInfo info;
+  int major = CA_VERSION_MAJOR;
+  int minor = CA_VERSION_MINOR;
+  wxLogDebug(wxT("version is %i %i"),major,minor);
+    
   info.SetDescription(wxT("measure contact angles in videos"));
-  info.SetCopyright(wxT("(C) 2010 Daniel Gruber <daniel.gruber@tydirium.org>"));
-  info.SetVersion(wxT("Version VERSION_MAJOR.VERSION_MINOR"));
-
+  info.SetCopyright(wxT("(C) 2010,2011 Daniel Gruber <daniel.gruber@tydirium.org>"));
+  info.SetVersion(wxString::Format(wxT("%i.%i"), major,minor));
   wxAboutBox(info);
-#endif
 }
 
 void MainFrame::processAll(wxCommandEvent &event) {

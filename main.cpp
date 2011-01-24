@@ -41,12 +41,21 @@ bool ContactAngleApp::OnInit()
 {
   /* parse the command line */
   wxCmdLineEntryDesc desc[] =   {
+#ifdef _WIN32
     {wxCMD_LINE_SWITCH, "h", "help", "Show this help message",
      wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
     {wxCMD_LINE_SWITCH, "v", "verbose", "Verbose output"},
     {wxCMD_LINE_OPTION, "f", "file", "Input file to process",
      wxCMD_LINE_VAL_STRING},
     {wxCMD_LINE_NONE}
+#else
+    {wxCMD_LINE_SWITCH, wxT("h"), wxT("help"), wxT("Show this help message"),
+     wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+    {wxCMD_LINE_SWITCH, wxT("v"), wxT("verbose"), wxT("Verbose output")},
+    {wxCMD_LINE_OPTION, wxT("f"), wxT("file"), wxT("Input file to process"),
+     wxCMD_LINE_VAL_STRING},
+    {wxCMD_LINE_NONE}
+#endif
   };
   wxCmdLineParser parser (desc, argc, argv);
   if (parser.Parse() !=0)

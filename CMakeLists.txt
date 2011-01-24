@@ -9,7 +9,7 @@ configure_file (
   "${PROJECT_BINARY_DIR}/config.h"
   )
 
-set(wxWidgets_USE_LIBS base core aui)
+set(wxWidgets_USE_LIBS base core adv)
 
 find_package(wxWidgets REQUIRED)
 FIND_PACKAGE(OpenCV REQUIRED)
