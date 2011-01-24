@@ -19,12 +19,19 @@ set(wxWidgets_USE_DEBUG ON)
 
 include_directories(${ContactAngle_SOURCE_DIR} ${wxWidgets_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
-add_executable(ContactAngle main.cpp MainFrame.h MainFrame.cpp fit.h fit.cpp)
+if(WIN32)
+  add_executable(ContactAngle WIN32 main.cpp MainFrame.h MainFrame.cpp fit.h fit.cpp)
+else()
+  add_executable(ContactAngle main.cpp MainFrame.h MainFrame.cpp fit.h fit.cpp)
+endif()
+
 target_link_libraries(ContactAngle ${wxWidgets_LIBRARIES} ${OpenCV_LIBS})
 install(TARGETS ContactAngle DESTINATION bin)
 
-FILE(GLOB dlls "${OpenCV_DIR}/bin/*.dll")
+file(GLOB dlls "${OpenCV_DIR}/bin/*.dll")
+file(GLOB samples "samples/*.avi")
 install(FILES ${dlls} DESTINATION bin)
+install(FILES ${samples} DESTINATION "share/doc/ContactAngle")
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ContactAngle")
