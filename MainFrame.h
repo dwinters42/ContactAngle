@@ -56,10 +56,8 @@ class MainFrame: public wxFrame {
   double al, ar;
 
   bool dataloaded;
-  bool deduped;
-  wxArrayInt framesToAnalyze;
   enum {ID_sliderFramenum=wxID_HIGHEST + 1, ID_sliderThres, ID_sliderLeft, \
-	ID_sliderRight, ID_processAll, ID_dedup};
+	ID_sliderRight, ID_processAll};
 
  protected:
   wxPanel* panel;
@@ -87,12 +85,10 @@ class MainFrame: public wxFrame {
   virtual void loadFile(wxCommandEvent &event);
   virtual void onExit(wxCommandEvent &event);
   virtual void onAbout(wxCommandEvent &event);
-  virtual void onDedup(wxCommandEvent &event);
   virtual void processAll(wxCommandEvent &event);
   virtual void onScroll(wxScrollEvent &event);
   virtual void onSize(wxSizeEvent &event);
   int _loadFile(wxFileName filename);
-  int _dedup(void);
   int _process(void);
 };
 

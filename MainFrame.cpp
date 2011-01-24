@@ -60,10 +60,6 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
 		   wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxT("Load video or image"),\
 		   wxEmptyString);
-  toolbar->AddTool(ID_dedup, wxT("Dedup"),				\
-		   wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_TOOLBAR),\
-		   wxNullBitmap, wxITEM_NORMAL, wxT("Find non-duplicate frames"),\
-		   wxEmptyString);
   toolbar->AddTool(ID_processAll, wxT("Analyze Movie"),\
 		   wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_TOOLBAR),\
 		   wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
@@ -147,8 +143,6 @@ MainFrame::MainFrame(wxWindow* parent, int id, const wxString& title, \
   Layout();
 
   dataloaded = false;
-  deduped = false;
-  framesToAnalyze.Clear();
 
   // defaults
   threshold = 110;
@@ -159,7 +153,6 @@ BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_OPEN, MainFrame::loadFile)
 EVT_MENU(wxID_EXIT, MainFrame::onExit)
 EVT_MENU(wxID_ABOUT, MainFrame::onAbout)
-EVT_MENU(ID_dedup, MainFrame::onDedup)
 EVT_MENU(ID_processAll, MainFrame::processAll)
 EVT_SCROLL(MainFrame::onScroll)
 EVT_SIZE(MainFrame::onSize)
@@ -215,68 +208,8 @@ int MainFrame::_loadFile(wxFileName fn)
   sliderRight->SetValue(fheight/2);
       
   dataloaded=true;
-  deduped=false;
-  framesToAnalyze.Clear();
-  
   _process();
 
-  return 0;
-}
-
-
-void MainFrame::onDedup(wxCommandEvent &event)
-{
-  if (!dataloaded) {
-    wxLogError(wxT("No data loaded!"));
-    return;
-  }
-  
-  _dedup();
-  _process();
-}
-
-int MainFrame::_dedup()
-{
-  int i;
-  cv::Mat temp;
-  cv::Mat oldframe(fheight,fwidth,CV_8UC1);
-  cv::Mat difframe(fheight,fwidth,CV_8UC1);
-  cv::Mat nextframe(fheight,fwidth,CV_8UC1);
-
-  wxProgressDialog *dlg = \
-    new wxProgressDialog(wxT("Finding duplicate images"),		\
-			 wxT("looking for duplicates in movie ..."),	\
-			 numframes-1, this, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-
-  framesToAnalyze.Clear();
-  wxLogDebug(wxT("numframes = %i"),numframes);
-
-  /* grab a first frame */
-  cap.set(CV_CAP_PROP_POS_FRAMES, 0);
-  cap >> temp;
-  cv::cvtColor(temp, oldframe, CV_BGR2GRAY);
-  framesToAnalyze.Add(0);
-
-  /* run through all frames */
-  for (i=1;i<numframes;i++) {
-    cap >> temp;
-    cv::cvtColor(temp, nextframe, CV_BGR2GRAY);
-    cv::compare(oldframe, nextframe, difframe, cv::CMP_NE);
-    if(cv::countNonZero(difframe) != 0) {
-      /* this is a new frame */
-      framesToAnalyze.Add(i);
-      oldframe = nextframe.clone();
-    }
-    dlg->Update(i);
-  }
-
-  wxLogStatus(wxT("Found %i unique frames, using only these"),framesToAnalyze.GetCount());
-
-  deduped = true;
-  numframes=framesToAnalyze.GetCount();
-  sliderFramenum->SetValue(1);
-  sliderFramenum->SetRange(1, numframes);
- 
   return 0;
 }
 
@@ -362,10 +295,7 @@ int MainFrame::_process() {
   cv::Mat frame;
   int bl, br;
 
-  if (deduped)
-    cap.set(CV_CAP_PROP_POS_FRAMES, framesToAnalyze.Item(sliderFramenum->GetValue()-1));
-  else
-    cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue()-1);
+  cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue()-1);
   cap >> frame;
   
   cv::Mat edges(fheight,fwidth,CV_8UC1);
