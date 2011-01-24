@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 project(ContactAngle)
 set(ContactAngle_VERSION_MAJOR 0)
-set(ContactAngle_VERSION_MINOR 1)
+set(ContactAngle_VERSION_MINOR 2)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.h.in"
