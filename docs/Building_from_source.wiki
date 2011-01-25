@@ -1,7 +1,7 @@
 <h2>Prerequisites</h2>
 
 Apart form the source code, you will need the
-[http://opencv.willowgarage.net|OpenCV] library, the
+[http://opencv.willowgarage.com|OpenCV] library, the
 [http://www.wxwidgets.org|wxWidgets] toolkit, the
 [http://cmake.org|cmake] build system and a working C++ compiler.
 
@@ -21,7 +21,7 @@ Currently, the only way to get the source code is to clone the
 [http://www.fossil-scm.org|fossil] repository from this website:
 
 <verbatim>
-fossil clone $<base_url> ContactAngle.fossil
+fossil clone $base_url ContactAngle.fossil
 mkdir ContactAngle
 cd ContactAngle
 fossil open ../ContactAngle.fossil

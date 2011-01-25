@@ -1,5 +1,6 @@
-This is the homepage for <b>ContactAngle</b>, a simplistic program to
-extract contact angles from videos of liquid droplets on a surface.
+This is the homepage for <b>ContactAngle</b>, a simple and easy-to-use
+program to extract contact angles from videos of liquid droplets on a
+surface.
 
     <img src='./Screenshot.png'/>
 
@@ -38,7 +39,7 @@ The program takes a very simple approach like the following:
   *  Repeat for all frames in movie
 
 This simple approach is robust and fast, but may not be as precise as
-other algorithmns that user a larger part of the image. However, it is
+other algorithms that user a larger part of the image. However, it is
 accurate enough for most purposes (did I mention it is free?).
 
 For a description of how to use it, look [./Usage.wiki|here].
@@ -49,10 +50,10 @@ For a description of how to use it, look [./Usage.wiki|here].
       movie. However, due to limitations in the underlying libraries, this
       only works on video formats where every frame is a key frame (e.g.
       Motion-JPG), so you will have to convert your videos, before you can
-      use the program. For details, see [./Usage.wiki|Usage]
-  *   It looks extremely ugly on Windows (this could be changed, though)
+      use the program. For details, see [./Usage.wiki|Usage].
+  *   It looks extremely ugly on Windows (this could be changed, though).
   *   It may not be as precise as some commercial programs (but it does
-      the job)
+      the job).
 
 If you encounter bugs or would like a new feature not implemented yet,
 please raise a ticket by clicking on the link on the navigation bar.
@@ -63,4 +64,4 @@ Currently there are no pre-compiled binaries, this will change soon.
 
 <h2>Source code</h2>
 
-See [./Building_from_source.wiki|Building from source]
+See [./Building_from_source.wiki|Building from source].
