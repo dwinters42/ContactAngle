@@ -167,6 +167,10 @@ void MainFrame::loadFile(wxCommandEvent &event)
     filename=dlg->GetPath();
     _loadFile(filename);
   }
+
+  plotwindow->SetClientSize(fwidth, fheight);
+  plotwindow->Refresh();
+  this->Fit();
 }
 
 int MainFrame::_loadFile(wxFileName fn)
@@ -209,7 +213,7 @@ int MainFrame::_loadFile(wxFileName fn)
       
   dataloaded=true;
   _process();
-
+ 
   return 0;
 }
 
