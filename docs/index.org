@@ -1,0 +1,68 @@
+#+TITLE: ContactAngle - extract contact angles from videos and images
+
+This is the site for *ContactAngle*, a simple and easy-to-use program
+to extract contact angles from videos of liquid droplets on a surface.
+
+#+ATTR_HTML: style="margin-left:50px; padding:20px"
+#+ATTR_HTML alt="Screenshot"
+[[./Screenshot_small.png]]
+
+* News
+
+24/1/2011: first public release of version 0.2
+
+* About the program
+
+The program is free and open source under a BSD license and will work
+on various flavours of BSD, Linux and Windows (and possibly MacOS
+X). It uses the [[http://opencv.willowgarage.com/][OpenCV]] computer vision library for image processing
+and the [[http://www.wxwidgets.org][wxWidgets]] toolkit for the user interface.
+
+It was originally created to optimise layer structures for digital
+microfluidic (DMF) devices for work done at the [[http://www.sircams.ed.ac.uk/emsg/index.html][EMSG research group]] at
+the University of Edinburgh, Scotland, UK. The reason for writing it
+was that we had no access to a commercial program that would reliably
+and quickly extract contact angles from videos with hundreds of
+frames.
+
+The author is Daniel Gruber <daniel@tydirium.org>.
+
+* How does it work?
+
+The program takes a very simple approach like the following:
+
+- Read a frame from the video
+- Binary threshold (convert it to black and white)
+- Detect the shape of the droplet in an area close to where it touches
+  the surface
+- Fit a parabola for each side and take the contact angle as the slope
+  of the function at the point where it touches the surface.
+- Repeat for all frames in movie
+
+This simple approach is robust and fast, but may not be as precise as
+other algorithms that user a larger part of the image. However, it is
+accurate enough for most purposes (did I mention it is free?).
+
+For a description of how to use it, look [[./Usage.org][here]].
+
+* Known problems and caveats
+
+- *Usable Video codecs*: by using the frame slider you can go back and
+  forth in the movie. However, due to limitations in the underlying
+  libraries, this only works on video formats where every frame is a
+  key frame (e.g.  Motion-JPG), so you will have to convert your
+  videos, before you can use the program. For details, see [[./Usage.org][Usage]].
+- It looks ugly on Windows (this could be changed, though).
+- Accuracy might be less than some commercial offerings, but it should
+  be good enough for most purposes.
+
+If you encounter bugs or would like a new feature not implemented yet,
+please send me an email!
+
+* Downloads
+
+Currently there are no pre-compiled binaries, this will change soon.
+
+* Source code
+
+See [[./Building_from_source.org][Building from source]].
