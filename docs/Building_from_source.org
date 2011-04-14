@@ -13,18 +13,17 @@ apt-get install build-essential cmake libcv-dev libcvaux-dev libhighgui-dev libw
 
 On Windows, you can get the libraries precompiled from their
 corresponding websites and you can use e.g. the free Microsoft Visual
-Studio 2008 (or 2010) Express.
+Studio 2008 (or 2010) Express. If you want to also build a Windows
+Installer, you will also need the free [[http://nsis.sourceforge.net/Main_Page][NSIS Installer]].
 
 * Get the source code
 
-Currently, the only way to get the source code is to clone the [[http://www.fossil-scm.org][fossil]]
-repository from this website:
+The source code is in a git repository hosted on sourceforge which can
+be browsed via [[http://contactangle.git.sourceforge.net/][GitWeb]]. You can check it out with the following (e.g. on
+a Unix-like system):
 
 #+BEGIN_EXAMPLE
-fossil clone $base_url ContactAngle.fossil
-mkdir ContactAngle
-cd ContactAngle
-fossil open ../ContactAngle.fossil
+git clone git://contactangle.git.sourceforge.net/gitroot/contactangle/contactangle
 #+END_EXAMPLE
 
 * Build on Unix
@@ -44,6 +43,4 @@ source dir, press configure (for eg. Visual Studio), press generate.
 
 Open the generated ContactAngle.sln in Visual Studio, build
 solution. This will give you the binary in the Release. or Debug/
-directory, depending on your build configuration.
-
-go [[./index.org][back]].
+directory, depending on your build configuration. 
