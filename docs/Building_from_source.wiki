@@ -1,0 +1,47 @@
+<h2>Prerequisites</h2>
+
+Apart form the source code, you will need the
+[http://opencv.willowgarage.com|OpenCV] library, the
+[http://www.wxwidgets.org|wxWidgets] toolkit, the
+[http://cmake.org|cmake] build system and a working C++ compiler.
+
+On an e.g. Debian or Ubuntu, the following should do the job:
+
+<verbatim>
+apt-get install build-essential cmake libcv-dev libwxgtk2.8-dev   
+</verbatim>
+
+On Windows, you can get the libraries precompiled from their
+corresponding websites and you can use e.g. the free Microsoft Visual
+Studio 2008 (or 2010) Express.
+
+<h2>Get the source code</h2>
+
+Currently, the only way to get the source code is to clone the
+[http://www.fossil-scm.org|fossil] repository from this website:
+
+<verbatim>
+fossil clone $base_url ContactAngle.fossil
+mkdir ContactAngle
+cd ContactAngle
+fossil open ../ContactAngle.fossil
+</verbatim>
+
+<h2>Build on Unix</h2>
+
+In the source directory run the following:
+
+<verbatim>
+cmake .
+make
+sudo make install
+</verbatim>
+
+<h2>Build on Windows</h2>
+
+Open cmake-gui, set the source and build directory to the ContacAngle
+source dir, press configure (for eg. Visual Studio), press generate.
+
+Open the generated ContactAngle.sln in Visual Studio, build
+solution. This will give you the binary in the Release. or Debug/
+directory, depending on your build configuration.
