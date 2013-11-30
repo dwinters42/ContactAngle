@@ -2,7 +2,7 @@ This is the homepage for <b>ContactAngle</b>, a simple and easy-to-use
 program to extract contact angles from videos of liquid droplets on a
 surface.
 
-    <img src='./Screenshot.png'/>
+    <img src='./Screenshot_small.png'/>
 
 <h2>News</h2>
 
@@ -24,7 +24,7 @@ was that we had no access to a commercial program that would reliably
 and quickly extract contact angles from videos with hundreds of
 frames. 
 
-The author is Daniel Gruber <daniel@tydirium.org>.
+The author is Daniel Winters <daniel@tydirium.org>.
 
 <h2>How does it work?</h2>
 
