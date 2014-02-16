@@ -1,4 +1,4 @@
-# Copyright (c) 2010,2011 Daniel Gruber <daniel@tydirium.org>
+# Copyright (c) 2010,2011 Daniel Winters <daniel@tydirium.org>
 #
 # Permission to use, copy, modify, and distribute this software for
 # any purpose with or without fee is hereby granted, provided that the
@@ -52,7 +52,7 @@ install(FILES ${samples} DESTINATION "share/doc/ContactAngle")
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ContactAngle")
-set(CPACK_PACKAGE_VENDOR "Daniel Gruber <daniel@tydirium.org>")
+set(CPACK_PACKAGE_VENDOR "Daniel Winters <daniel@tydirium.org>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 set(CPACK_PACKAGE_VERSION_MAJOR "${ContactAngle_VERSION_MAJOR}")

@@ -1,4 +1,4 @@
-// Copyright (c) 2010,2011 Daniel Gruber <daniel@tydirium.org>
+// Copyright (c) 2010,2011 Daniel Winters <daniel@tydirium.org>
 
 // Permission to use, copy, modify, and distribute this software for
 // any purpose with or without fee is hereby granted, provided that the
@@ -230,7 +230,7 @@ void MainFrame::onAbout(wxCommandEvent &event)
   wxLogDebug(wxT("version is %i %i"),major,minor);
     
   info.SetDescription(wxT("measure contact angles in videos"));
-  info.SetCopyright(wxT("(C) 2010,2011 Daniel Gruber <daniel.gruber@tydirium.org>"));
+  info.SetCopyright(wxT("(C) 2010,2011 Daniel Winters <daniel.gruber@tydirium.org>"));
   info.SetVersion(wxString::Format(wxT("%i.%i"), major,minor));
   wxAboutBox(info);
 }
