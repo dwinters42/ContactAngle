@@ -46,11 +46,6 @@ For a description of how to use it, look [./Usage.wiki|here].
 
 <h2>Known problems and caveats</h2>
 
-  *   Seeking: by using the frame slider you can go back and forth in the
-      movie. However, due to limitations in the underlying libraries, this
-      only works on video formats where every frame is a key frame (e.g.
-      Motion-JPG), so you will have to convert your videos, before you can
-      use the program. For details, see [./Usage.wiki|Usage].
   *   It looks extremely ugly on Windows (this could be changed, though).
   *   It may not be as precise as some commercial programs (but it does
       the job).

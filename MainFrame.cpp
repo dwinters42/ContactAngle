@@ -230,7 +230,7 @@ void MainFrame::onAbout(wxCommandEvent &event)
   wxLogDebug(wxT("version is %i %i"),major,minor);
     
   info.SetDescription(wxT("measure contact angles in videos"));
-  info.SetCopyright(wxT("(C) 2010,2011 Daniel Winters <daniel.gruber@tydirium.org>"));
+  info.SetCopyright(wxT("(C) 2010,2011 Daniel Winters <daniel@tydirium.org>"));
   info.SetVersion(wxString::Format(wxT("%i.%i"), major,minor));
   wxAboutBox(info);
 }
@@ -247,7 +247,7 @@ void MainFrame::processAll(wxCommandEvent &event) {
   outfilename.SetExt(wxT("txt"));
   
   if (outfilename.FileExists()) {
-    if (wxMessageBox(wxT("Output file exists, overwrite?"), wxT("Confirm"),wxYES_NO)==wxNO)
+    if (wxMessageBox(wxT("Output file exists, overwrite?"), wxT("Confirm"), wxYES_NO)==wxNO)
       return;
   }
   
@@ -279,7 +279,8 @@ void MainFrame::processAll(wxCommandEvent &event) {
   sliderFramenum->SetValue(1);
   _process();
 
-  wxLogStatus(wxT("Successfully wrote output file ") + outfilename.GetFullName() + wxT("."));
+  wxMessageBox(wxT("Successfully wrote output file \"") + outfilename.GetFullName() + 
+	       wxT("\"."), wxT("Finished"), wxOK);
 }
 
 void MainFrame::onScroll(wxScrollEvent &event) {

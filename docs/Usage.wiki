@@ -3,7 +3,7 @@ Here is how to use the program in a nutshell:
 <h2>Load a file</h2>
 
   *  Press the "Load" button (or Ctrl-O) to open a movie file in
-     Motion-JPG (MJPG) format. A suitable
+     a video format support by OpenCV (many will work). A suitable
      [doc/tip/samples/test.avi|sample] comes with the distribution.
 
 <h2>Set the parameters</h2>
@@ -29,7 +29,7 @@ the image.
   *  Repeat the same for the "Base right" slider and the right plot
      window, a good value for the sample is 261.
 
-  * Adjust the "NumofPoints" slider to change the number of points (as
+  *  Adjust the "NumofPoints" slider to change the number of points (as
      shown in the plot windows) to get a good fit, meaning that the
      thin red lines in the plot windows do not deviate from the blue
      edge points. In general, the more points, the more precise the

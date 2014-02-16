@@ -44,12 +44,6 @@ Known problems and caveats
 - There seems to be a problem when running ContactAngle on *Windows
   7*, however I do not have access to such a machine at the moment. If
   you encounter problems, please send me an email.
-- *Usable Video codecs*: by using the frame slider you can go back and
-  forth in the movie. However, due to limitations in the underlying
-  libraries, this only works on video formats where every frame is a
-  key frame (e.g.  Motion-JPG), so you will have to convert your
-  videos, before you can use the program. For details, see
-  docs/Usage.html.
 - It looks ugly on Windows (this could be changed, though).
 - Accuracy might be less than some commercial offerings, but it should
   be good enough for most purposes.
