@@ -17,8 +17,13 @@ Studio 2008 (or 2010) Express.
 
 <h2>Get the source code</h2>
 
-Currently, the only way to get the source code is to clone the
-[http://www.fossil-scm.org|fossil] repository from this website:
+The latest version of the sourcecode can be download as
+[http://www.tydirium.org/cgi-bin/fossil/ContactAngle/zip/ContactAngle.zip?uuid=tip|zip]
+or
+[http://www.tydirium.org/cgi-bin/fossil/ContactAngle/zip/ContactAngle.tar.gz?uuid=tip|tar archive]
+
+Alternatively, the complete [http://www.fossil-scm.org|fossil]
+repository can be cloned from this website:
 
 <verbatim>
 fossil clone $base_url ContactAngle.fossil

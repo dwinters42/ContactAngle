@@ -13,9 +13,9 @@ was that we had no access to a commercial program that would reliably
 and quickly extract contact angles from videos with hundreds of
 frames.
 
-The author is Daniel Winters <daniel@tydirium.org>.
+The program was written by Daniel Winters <daniel@tydirium.org>.
 
-[OpenCV]: http://opencv.willowgarage.com/
+[OpenCV]: http://opencv.org/
 [wxWidgets]: http://www.wxwidgets.org
 [EMSG research group]: http://www.sircams.ed.ac.uk/emsg/index.html
 
