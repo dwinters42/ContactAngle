@@ -22,34 +22,33 @@ Mat vandermonde(int degree, double *x, int numofpoints)
 {
   int row, col;
 
-  Mat v(numofpoints,degree+1,CV_64FC1);
+  Mat v(numofpoints, degree+1, CV_64FC1);
 
   for (row=0; row<numofpoints; row++) {
     double* Mi = v.ptr<double>(row);
     for (col=0; col<degree+1; col++) {
-      Mi[col]=pow(x[row],degree-col);
+      Mi[col]=pow(x[row], degree-col);
     }
   }
   return v;
 }
 
-
 int polyfit(double *fit_results, double *xvals, double *yvals, int degree, int numofpoints)
 {
   int row;
-  Mat y(numofpoints,1,CV_64FC1,yvals);
+  Mat y(numofpoints, 1, CV_64FC1, yvals);
   
   Mat v;
-  v=vandermonde(degree,xvals,numofpoints);
+  v=vandermonde(degree, xvals, numofpoints);
 	
   Mat vtrans, vadj;
-  transpose(v,vtrans);
-  invert(vtrans*v,vadj);
+  transpose(v, vtrans);
+  invert(vtrans*v, vadj);
 
   Mat x;
   x=vadj*vtrans*y;
 
-  for (row=0;row<degree+1;row++) {
+  for (row=0; row<degree+1; row++) {
     double* Mi = x.ptr<double>(row);
     fit_results[row]=Mi[0];
   }
