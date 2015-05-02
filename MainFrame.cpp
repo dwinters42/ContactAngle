@@ -298,7 +298,6 @@ int MainFrame::_process() {
     return -1;
 
   cv::Mat frame;
-  int bl, br;
 
   cap.set(CV_CAP_PROP_POS_FRAMES, sliderFramenum->GetValue()-1);
   cap >> frame;
@@ -314,14 +313,8 @@ int MainFrame::_process() {
     rot_mat=getRotationMatrix2D(cv::Point(basepointx,basepointy), -1*tilt, 1.0);
     cv::warpAffine(edges, temp, rot_mat, edges.size());
     edges=temp;
-    bl=baseleft;
-    br=baseleft;
   }
-  else {
-    bl=baseleft;
-    br=baseright;
-  }
-  
+
   cv::cvtColor(edges, frame, CV_GRAY2BGR);
   
   int numofpoints=sliderFitpoints->GetValue();
