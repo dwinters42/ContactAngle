@@ -225,13 +225,9 @@ void MainFrame::onExit(wxCommandEvent &event)
 void MainFrame::onAbout(wxCommandEvent &event)
 {
   wxAboutDialogInfo info;
-  int major = CA_VERSION_MAJOR;
-  int minor = CA_VERSION_MINOR;
-  wxLogDebug(wxT("version is %i %i"),major,minor);
-    
-  info.SetDescription(wxT("measure contact angles in videos"));
-  info.SetCopyright(wxT("(C) 2010,2011 Daniel Winters <daniel@tydirium.org>"));
-  info.SetVersion(wxString::Format(wxT("%i.%i"), major,minor));
+  info.SetDescription(wxT("Tool to measure liquid contact angles of droplets in images and videos"));
+  info.SetCopyright(wxT("Copyright 2010,2011 Daniel Winters <daniel@tydirium.org>"));
+  info.SetVersion(wxString::Format(wxT("%i.%i"), CA_VERSION_MAJOR, CA_VERSION_MINOR));
   wxAboutBox(info);
 }
 
@@ -239,10 +235,15 @@ void MainFrame::processAll(wxCommandEvent &event) {
   int i;
 
   if (!dataloaded) {
+    wxCommandEvent dummy;
+    loadFile(dummy);
+  }
+
+  if (!dataloaded) {
     wxLogError(wxT("No data loaded!"));
     return;
   }
-
+  
   wxFileName outfilename = filename;
   outfilename.SetExt(wxT("txt"));
   
