@@ -231,7 +231,8 @@ void MainFrame::onAbout(wxCommandEvent &event)
   wxAboutBox(info);
 }
 
-void MainFrame::processAll(wxCommandEvent &event) {
+void MainFrame::processAll(wxCommandEvent &event)
+{
   int i;
 
   if (!dataloaded) {
@@ -266,17 +267,22 @@ void MainFrame::processAll(wxCommandEvent &event) {
   str.Printf(wxT("# numoffitpoints = %i\n"),sliderFitpoints->GetValue());
   outfile.Write(str);
 
+  wxProgressDialog d(wxT("Analyzing..."), wxEmptyString, numframes, this,
+		     wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_REMAINING_TIME |wxPD_CAN_ABORT);
+  
   // do the actual work
-  wxBeginBusyCursor();
   for (i=1; i<=numframes; i++) {
-    sliderFramenum->SetValue(i);
+
+    if (!d.Update(i))
+      break;
+
     _process();
-    str.Printf(wxT("%i, %f, %f\n"),i,al,ar);
+    str.Printf(wxT("%i, %f, %f\n"), i, al, ar);
     outfile.Write(str);
     wxYield();
   }
-  wxEndBusyCursor();
 
+  // clean up
   sliderFramenum->SetValue(1);
   _process();
 
